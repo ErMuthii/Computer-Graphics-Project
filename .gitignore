@@ -1,0 +1,12 @@
+build/
+build-*/
+/outputs/*
+!/outputs/README.md
+.DS_Store
+*.o
+*.obj
+*.exe
+*.pdb
+*.ilk
+*.dSYM/
+
