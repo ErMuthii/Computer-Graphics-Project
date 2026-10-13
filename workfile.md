@@ -50,8 +50,10 @@ Each teammate should confirm that the foundation builds on their own machine;
 the group has not yet specified its operating systems. The current local
 verification uses macOS and Apple Clang with the explicit SDK selection
 documented in README; the default compiler SDK is incompatible with the installed
-linker. The portable CMake build and test commands are checked as part of the
-foundation's publication process.
+linker. CMake 4.4.4 successfully configured and built a clean copy of the committed
+files; CTest passed and the resulting executable generated its diagnostic image.
+The direct compiler route was also verified. Other-platform builds still need
+confirmation on the group's own machines.
 
 Later integration: add the merged algorithms to the build, compose the fabric
 swatch and two-panel dress, collect evidence, and make the README accurate for
@@ -343,7 +345,11 @@ record; the source files and meaningful author commits provide contribution evid
   remain assigned to their respective owners.
 - The diagnostic executable and foundation checks build without warnings using
   the documented macOS SDK flag; the checks pass and the PPM image is generated.
-- Publish the verified foundation using Eric's configured Git identity and keep
-  the feature commit in history when merging into `main`.
+- The foundation is published to GitHub `main` and its feature branch. Source
+  commit: `723a41e`; initial merge into `main`: `92fc80e`. It uses Eric's configured
+  Git identity, and the original feature commit is retained in history.
+- Foundation implementation and the current build setup are complete. The CMake
+  clean-checkout build and CTest pass; other-platform confirmation remains a
+  teammate onboarding check, not a blocker on starting the assignments.
 - Classmates should pull remote `main`, create their assigned branches and begin
   their modules. Future scene integration depends on those modules being merged.

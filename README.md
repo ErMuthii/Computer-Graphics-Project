@@ -13,6 +13,9 @@ transformation, animation and OpenGL checkpoints. The shared foundation is ready
 a pixel canvas, common geometry types, PPM image export, a diagnostic image and
 foundation checks. The assigned drawing, filling, clipping and curve modules are
 not implemented yet. See [workfile.md](workfile.md) for the assignments and workflow.
+The foundation is published on `main`; each teammate can pull it and create the
+branch listed for their assignment. The initial foundation review was waived
+by Eric. Other algorithm tasks use the documented PR review workflow.
 
 ## Group members and responsibilities
 
@@ -126,6 +129,10 @@ workfile.md             Temporary CP1 collaboration plan
   to PNG without changing the pure C++ rendering implementation.
 - CP1 uses a simplified 2D dress; future previews show style and pattern placement,
   not verified garment measurements or physically simulated cloth.
-- The initial foundation builds without warnings and its checks pass using Apple
-  Clang on macOS with the SDK flag described above. CMake is not installed here;
-  CMake and other-platform builds need verification on machines with those tools.
+- The foundation builds without warnings using Apple Clang on macOS with the
+  documented SDK selection. Both the direct build and a CMake 4.4.4 build from a
+  clean copy of the committed files were verified; foundation checks pass and the
+  image exporter runs. Windows and Linux builds have not yet been verified.
+- CMake verification used an isolated tool installation inside ignored `build/`
+  rather than a system installation. Teammates need CMake on their own PATH to
+  use the standard CMake commands, or can use the direct compiler route.

@@ -51,3 +51,15 @@ integration task will compose their completed modules into project-related scene
 
 See the root README for build, run and test commands, and `workfile.md` for proposed
 algorithm signatures, assignments and the collaboration workflow.
+
+## Publication and verification
+
+The foundation was published as source commit `723a41e` and merged into `main`
+as `92fc80e`. Eric authorized publishing this foundation without Jeremy's review.
+Teammates can now create their assigned branches from the updated `main`.
+
+The direct compiler build was verified with Apple Clang. CMake 4.4.4 also built
+a clean archived copy of the committed files, CTest passed its foundation check,
+and the built diagnostic executable generated an image. Both routes used the
+macOS SDK selection described in the README. Windows and Linux verification
+remains part of each teammate's environment setup.
