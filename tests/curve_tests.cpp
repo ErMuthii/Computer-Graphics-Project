@@ -100,6 +100,22 @@ void testSampling() {
     check(kitenge::sampleCubicBezier(kSCurve, 1).size() == 2, "1 segment gives just the two endpoints");
 }
 
+void testRasterRendering() {
+    kitenge::Canvas canvas(101, 101, {0, 0, 0});
+    const kitenge::Color gold{244, 190, 77};
+    kitenge::drawCubicBezier(canvas, kSCurve, gold, 100);
+    const auto colored = [&canvas, gold](int x, int y) {
+        const auto pixel = canvas.pixelAt(x, y);
+        return pixel.red == gold.red && pixel.green == gold.green && pixel.blue == gold.blue;
+    };
+    check(colored(0, 0) && colored(100, 0), "drawn curve includes both endpoints");
+    check(colored(50, 75), "drawn curve passes through its computed midpoint");
+    check(!colored(50, 0), "drawn curve does not use the endpoint chord");
+    check(throws<std::invalid_argument>([&] {
+        kitenge::drawCubicBezier(canvas, kSCurve, gold, 0);
+    }), "drawn curve rejects zero segments");
+}
+
 }  // namespace
 
 int main() {
@@ -108,6 +124,7 @@ int main() {
     testStraightLineConfiguration();
     testInvalidT();
     testSampling();
+    testRasterRendering();
 
     if (failures != 0) {
         std::cerr << failures << " curve check(s) failed\n";

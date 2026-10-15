@@ -36,6 +36,14 @@ add_executable(lines_demo src/lines_demo.cpp)
 target_link_libraries(lines_demo PRIVATE kitenge_lines)
 kitenge_warnings(lines_demo)
 
+add_library(kitenge_curves src/curves.cpp)
+target_link_libraries(kitenge_curves PUBLIC kitenge_lines)
+kitenge_warnings(kitenge_curves)
+
+add_executable(bezier_demo src/bezier_demo.cpp)
+target_link_libraries(bezier_demo PRIVATE kitenge_curves)
+kitenge_warnings(bezier_demo)
+
 add_library(kitenge_circles src/circles.cpp)
 target_link_libraries(kitenge_circles PUBLIC kitenge_foundation)
 kitenge_warnings(kitenge_circles)
@@ -70,6 +78,11 @@ if(BUILD_TESTING)
     target_link_libraries(line_tests PRIVATE kitenge_lines)
     kitenge_warnings(line_tests)
     add_test(NAME lines COMMAND line_tests)
+
+    add_executable(curve_tests tests/curve_tests.cpp)
+    target_link_libraries(curve_tests PRIVATE kitenge_curves)
+    kitenge_warnings(curve_tests)
+    add_test(NAME curves COMMAND curve_tests)
 
     add_executable(circle_tests tests/circle_tests.cpp)
     target_link_libraries(circle_tests PRIVATE kitenge_circles)

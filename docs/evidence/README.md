@@ -18,6 +18,20 @@ if requested by the lecturer.
 
 ## Recorded evidence
 
+### Cubic Bézier construction and fabric motifs (`bezier-curves.png`)
+
+- Original evaluation and sampling: Andrew Karanja Gathirwa, 167144;
+  source commit `b7fc479` on `feat/cp1-bezier`.
+- Canvas rendering and demo source: Muthii Eric Macharia, 166390;
+  source commit `780b631` on `fix/cp1-bezier-evidence`. Eric generated the
+  evidence PNG from that demo.
+- Algorithms: de Casteljau evaluation, uniform sampling and Bresenham
+  connections between rounded samples.
+- Commands: `bezier_demo outputs/bezier-curves.ppm`, then
+  `sips -s format png --out docs/evidence/bezier-curves.png outputs/bezier-curves.ppm`.
+- Project component: visible control-point construction and repeated arched
+  fabric motifs for future neckline or dress decoration.
+
 ### Lines before and after clipping (`lines-clipping.png`)
 
 - Author: Muthii Eric Macharia, 166390, covering the lines assignment.

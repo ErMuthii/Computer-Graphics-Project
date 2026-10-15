@@ -340,16 +340,15 @@ record; the source files and meaningful author commits provide contribution evid
 
 ## Current state
 
-- Foundation implementation branch: `feat/cp1-foundation`.
-- Shared foundation and documentation are present; the class algorithm modules
-  remain assigned to their respective owners.
-- The diagnostic executable and foundation checks build without warnings using
-  the documented macOS SDK flag; the checks pass and the PPM image is generated.
-- The foundation is published to GitHub `main` and its feature branch. Source
-  commit: `723a41e`; initial merge into `main`: `92fc80e`. It uses Eric's configured
-  Git identity, and the original feature commit is retained in history.
-- Foundation implementation and the current build setup are complete. The CMake
-  clean-checkout build and CTest pass; other-platform confirmation remains a
-  teammate onboarding check, not a blocker on starting the assignments.
-- Classmates should pull remote `main`, create their assigned branches and begin
-  their modules. Future scene integration depends on those modules being merged.
+- Foundation, polygon fill, polygon clipping, lines, circles/ellipses and
+  Bézier evaluation are in the Git history. Eric integrated Bézier raster
+  rendering after the lines module became available.
+- The selected module images are recorded in `docs/evidence/`, with source
+  commits and regeneration commands in its README.
+- Eric authorized deadline merging of lines PR #5 and circles PR #6 without
+  the assigned teammate approvals. The merge commits preserve the original
+  feature commits and their authorship.
+- The complete module build and six CTest checks pass on macOS with the
+  documented SDK selection. A final integrated fabric swatch and simplified
+  dress scene remain for the next integration step; Windows and Linux checks
+  remain to be run on the current combined tree.
