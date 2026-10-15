@@ -73,7 +73,17 @@ c++ -std=c++17 -Wall -Wextra -Wpedantic -Iinclude src/canvas.cpp src/ppm.cpp tes
 ./build/kitenge_cp1 outputs/foundation.ppm
 ```
 
-These commands cover the current foundation only. Extend the build configuration
+Polygon clipping checks and its before-and-after demonstration:
+
+```sh
+c++ -std=c++17 -Wall -Wextra -Wpedantic -Iinclude src/polygon_clip.cpp tests/polygon_clip_tests.cpp -o build/polygon_clip_tests
+c++ -std=c++17 -Wall -Wextra -Wpedantic -Iinclude src/canvas.cpp src/ppm.cpp src/polygon_clip.cpp src/polygon_clip_demo.cpp -o build/polygon_clip_demo
+./build/polygon_clip_tests
+./build/polygon_clip_demo outputs/polygon-clipping.ppm
+```
+
+The same commands work on Windows with MSYS2 UCRT64 `g++` from Git Bash.
+These commands cover the current foundation and polygon clipping only. Extend the build configuration
 and documented commands when the assigned algorithm modules are added.
 
 On the current macOS machine, the compiler defaults to an SDK that its linker
@@ -98,7 +108,7 @@ build on this machine may need the equivalent configuration option
 | Binary PPM image export | Implemented |
 | Bresenham line drawing and line clipping | Assigned; not implemented |
 | Scanline polygon filling | Assigned; not implemented |
-| Polygon clipping | Assigned; not implemented |
+| Sutherland-Hodgman polygon clipping against convex boundaries | Implemented on `feat/cp1-polygon-clipping`; see [polygon-clipping.md](docs/algorithms/polygon-clipping.md) |
 | Midpoint circle and ellipse drawing | Assigned; not implemented |
 | Cubic Bézier evaluation and rendering | Assigned; not implemented |
 | Integrated fabric swatch and simplified dress | Planned after module integration |
@@ -132,7 +142,10 @@ workfile.md             Temporary CP1 collaboration plan
 - The foundation builds without warnings using Apple Clang on macOS with the
   documented SDK selection. Both the direct build and a CMake 4.4.4 build from a
   clean copy of the committed files were verified; foundation checks pass and the
-  image exporter runs. Windows and Linux builds have not yet been verified.
+  image exporter runs. On Windows 11, g++ 15.2 (MSYS2 UCRT64) with CMake 4.4.4
+  and the MinGW Makefiles generator built a clean copy of the polygon clipping
+  branch without warnings, and CTest passed both checks. Linux builds have not yet
+  been verified.
 - CMake verification used an isolated tool installation inside ignored `build/`
   rather than a system installation. Teammates need CMake on their own PATH to
   use the standard CMake commands, or can use the direct compiler route.

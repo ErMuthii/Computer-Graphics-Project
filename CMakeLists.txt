@@ -20,6 +20,14 @@ add_executable(kitenge_cp1 src/main.cpp)
 target_link_libraries(kitenge_cp1 PRIVATE kitenge_foundation)
 kitenge_warnings(kitenge_cp1)
 
+add_library(kitenge_polygon_clip src/polygon_clip.cpp)
+target_link_libraries(kitenge_polygon_clip PUBLIC kitenge_foundation)
+kitenge_warnings(kitenge_polygon_clip)
+
+add_executable(polygon_clip_demo src/polygon_clip_demo.cpp)
+target_link_libraries(polygon_clip_demo PRIVATE kitenge_polygon_clip)
+kitenge_warnings(polygon_clip_demo)
+
 include(CTest)
 if(BUILD_TESTING)
     add_executable(foundation_tests tests/foundation_tests.cpp)
@@ -27,4 +35,9 @@ if(BUILD_TESTING)
     kitenge_warnings(foundation_tests)
     add_test(NAME foundation COMMAND foundation_tests
         ${CMAKE_CURRENT_BINARY_DIR}/test-output/foundation.ppm)
+
+    add_executable(polygon_clip_tests tests/polygon_clip_tests.cpp)
+    target_link_libraries(polygon_clip_tests PRIVATE kitenge_polygon_clip)
+    kitenge_warnings(polygon_clip_tests)
+    add_test(NAME polygon_clip COMMAND polygon_clip_tests)
 endif()
