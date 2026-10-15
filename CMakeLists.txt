@@ -28,6 +28,18 @@ add_executable(polygon_clip_demo src/polygon_clip_demo.cpp)
 target_link_libraries(polygon_clip_demo PRIVATE kitenge_polygon_clip)
 kitenge_warnings(polygon_clip_demo)
 
+add_library(kitenge_lines src/lines.cpp)
+target_link_libraries(kitenge_lines PUBLIC kitenge_foundation)
+kitenge_warnings(kitenge_lines)
+
+add_executable(lines_demo src/lines_demo.cpp)
+target_link_libraries(lines_demo PRIVATE kitenge_lines)
+kitenge_warnings(lines_demo)
+
+add_library(kitenge_polygon_fill src/polygon_fill.cpp)
+target_link_libraries(kitenge_polygon_fill PUBLIC kitenge_foundation)
+kitenge_warnings(kitenge_polygon_fill)
+
 include(CTest)
 if(BUILD_TESTING)
     add_executable(foundation_tests tests/foundation_tests.cpp)
@@ -36,10 +48,6 @@ if(BUILD_TESTING)
     add_test(NAME foundation COMMAND foundation_tests
         ${CMAKE_CURRENT_BINARY_DIR}/test-output/foundation.ppm)
     
-    add_library(kitenge_polygon_fill src/polygon_fill.cpp)
-    target_link_libraries(kitenge_polygon_fill PUBLIC kitenge_foundation)
-    kitenge_warnings(kitenge_polygon_fill)
-
     add_executable(polygon_fill_tests tests/polygon_fill_tests.cpp)
     target_link_libraries(polygon_fill_tests PRIVATE kitenge_polygon_fill)
     kitenge_warnings(polygon_fill_tests)
@@ -49,4 +57,9 @@ if(BUILD_TESTING)
     target_link_libraries(polygon_clip_tests PRIVATE kitenge_polygon_clip)
     kitenge_warnings(polygon_clip_tests)
     add_test(NAME polygon_clip COMMAND polygon_clip_tests)
+
+    add_executable(line_tests tests/line_tests.cpp)
+    target_link_libraries(line_tests PRIVATE kitenge_lines)
+    kitenge_warnings(line_tests)
+    add_test(NAME lines COMMAND line_tests)
 endif()
