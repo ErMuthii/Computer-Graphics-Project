@@ -20,6 +20,10 @@ add_executable(kitenge_cp1 src/main.cpp)
 target_link_libraries(kitenge_cp1 PRIVATE kitenge_foundation)
 kitenge_warnings(kitenge_cp1)
 
+add_library(kitenge_polygon_clip src/polygon_clip.cpp)
+target_link_libraries(kitenge_polygon_clip PUBLIC kitenge_foundation)
+kitenge_warnings(kitenge_polygon_clip)
+
 include(CTest)
 if(BUILD_TESTING)
     add_executable(foundation_tests tests/foundation_tests.cpp)
