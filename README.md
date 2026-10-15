@@ -6,28 +6,42 @@ application includes selectable motif shapes and color combinations, a color
 grading index for comparing palettes, and a dress preview. Live camera alignment
 is an advanced goal developed after the graphics foundation works.
 
-## Current checkpoint
+## Visual evidence
 
-CP1 implements project-related graphics algorithms in pure C++ before the later
-transformation, animation and OpenGL checkpoints. The shared foundation is ready:
-a pixel canvas, common geometry types, PPM image export, a diagnostic image and
-foundation checks. Line drawing and clipping, polygon filling, polygon
-clipping, circle and ellipse drawing, and Bézier evaluation and rendering
-are implemented.
-See [workfile.md](workfile.md) for the assignments and workflow.
-The source commits for each feature remain in the merge history. Eric waived
-review for the foundation and the deadline integration of PRs #5 and #6.
+The images below show the CP1 graphics algorithms in the project. The original
+PNG files are in the [evidence folder](docs/evidence/), with authorship, source
+commits, and reproduction commands in its [evidence notes](docs/evidence/README.md).
+
+### Polygon filling: motif and dress panels
+
+![A filled red diamond beside the filled bodice and skirt panels of a simplified dress](docs/evidence/polygon_fill.png)
+
+### Lines before and after clipping
+
+![Line-based fabric motifs before and after clipping to a rectangular window](docs/evidence/lines-clipping.png)
+
+### Polygon clipping: fabric window and skirt panel
+
+![Polygon motifs before clipping, clipped to a fabric window, and clipped to a skirt panel](docs/evidence/polygon-clipping.png)
+
+### Circle and ellipse motifs
+
+![Circular and elliptical fabric medallions with a central button strip](docs/evidence/circles-ellipses.png)
+
+### Bézier curves: control points and fabric motifs
+
+![Four Bézier control points and their curve beside repeated arched fabric motifs](docs/evidence/bezier-curves.png)
 
 ## Group members and responsibilities
 
-| Student number | Member | Initial CP1 responsibility |
-| --- | --- | --- |
-| 166263 | Waruhiu Jeremy Kang'ethe | Lines and line clipping |
-| 166390 | Muthii Eric Macharia | Shared foundation, build setup and integration |
-| 168656 | Deborah Rehana | Polygon representation and scanline filling |
-| 166914 | Murega Kelvin Mutwiri | Polygon clipping |
-| 161492 | Sayialel Eric Lenina | Circle and ellipse drawing |
-| 167144 | Andrew Karanja Gathirwa | Bézier curves |
+| Student number | Member                   | Initial CP1 responsibility                     |
+| -------------- | ------------------------ | ---------------------------------------------- |
+| 166263         | Waruhiu Jeremy Kang'ethe | Lines and line clipping                        |
+| 166390         | Muthii Eric Macharia     | Shared foundation, build setup and integration |
+| 168656         | Deborah Rehana           | Polygon representation and scanline filling    |
+| 166914         | Murega Kelvin Mutwiri    | Polygon clipping                               |
+| 161492         | Sayialel Eric Lenina     | Circle and ellipse drawing                     |
+| 167144         | Andrew Karanja Gathirwa  | Bézier curves                                  |
 
 ## Technologies and tools
 
@@ -128,17 +142,17 @@ build on this machine may need the equivalent configuration option
 
 ## Graphics implementation progress
 
-| Component | Status |
-| --- | --- |
-| Common points, RGB colors, polygons and rectangle types | Implemented |
-| Pixel buffer and bounds-safe pixel writes | Implemented |
-| Binary PPM image export | Implemented |
-| Bresenham line drawing and Cohen-Sutherland line clipping | Implemented on `feat/cp1-lines`; see [lines.md](docs/algorithms/lines.md) |
-| Scanline polygon filling | Implemented; see [polygon_fill.md](docs/algorithms/polygon_fill.md) |
+| Component                                                     | Status                                                                                                     |
+| ------------------------------------------------------------- | ---------------------------------------------------------------------------------------------------------- |
+| Common points, RGB colors, polygons and rectangle types       | Implemented                                                                                                |
+| Pixel buffer and bounds-safe pixel writes                     | Implemented                                                                                                |
+| Binary PPM image export                                       | Implemented                                                                                                |
+| Bresenham line drawing and Cohen-Sutherland line clipping     | Implemented on `feat/cp1-lines`; see [lines.md](docs/algorithms/lines.md)                                  |
+| Scanline polygon filling                                      | Implemented; see [polygon_fill.md](docs/algorithms/polygon_fill.md)                                        |
 | Sutherland-Hodgman polygon clipping against convex boundaries | Implemented on `feat/cp1-polygon-clipping`; see [polygon-clipping.md](docs/algorithms/polygon-clipping.md) |
-| Midpoint circle and ellipse drawing | Implemented on `feat/cp1-circles-ellipses`; see [circles-ellipses.md](docs/algorithms/circles-ellipses.md) |
-| Cubic Bézier evaluation and raster rendering | Implemented; see [bezier.md](docs/algorithms/bezier.md) and [evidence](docs/evidence/bezier-curves.png) |
-| Integrated fabric swatch and simplified dress | Planned after module integration |
+| Midpoint circle and ellipse drawing                           | Implemented on `feat/cp1-circles-ellipses`; see [circles-ellipses.md](docs/algorithms/circles-ellipses.md) |
+| Cubic Bézier evaluation and raster rendering                  | Implemented; see [bezier.md](docs/algorithms/bezier.md) and [evidence](docs/evidence/bezier-curves.png)    |
+| Integrated fabric swatch and simplified dress                 | Planned after module integration                                                                           |
 
 The foundation diagnostic is a grid of RGB color blocks written pixel by pixel.
 It verifies the raster output path and does not claim to demonstrate the assigned
