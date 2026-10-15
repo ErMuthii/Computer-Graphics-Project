@@ -11,8 +11,9 @@ is an advanced goal developed after the graphics foundation works.
 CP1 implements project-related graphics algorithms in pure C++ before the later
 transformation, animation and OpenGL checkpoints. The shared foundation is ready:
 a pixel canvas, common geometry types, PPM image export, a diagnostic image and
-foundation checks. The assigned drawing, filling, clipping and curve modules are
-not implemented yet. See [workfile.md](workfile.md) for the assignments and workflow.
+foundation checks. Line drawing and clipping, polygon filling, and polygon
+clipping are implemented. Circle, ellipse and curve modules remain planned.
+See [workfile.md](workfile.md) for the assignments and workflow.
 The foundation is published on `main`; each teammate can pull it and create the
 branch listed for their assignment. The initial foundation review was waived
 by Eric. Other algorithm tasks use the documented PR review workflow.
@@ -82,9 +83,17 @@ c++ -std=c++17 -Wall -Wextra -Wpedantic -Iinclude src/canvas.cpp src/ppm.cpp src
 ./build/polygon_clip_demo outputs/polygon-clipping.ppm
 ```
 
+Line drawing and clipping checks and their before-and-after demonstration:
+
+```sh
+c++ -std=c++17 -Wall -Wextra -Wpedantic -Iinclude src/canvas.cpp src/lines.cpp tests/line_tests.cpp -o build/line_tests
+c++ -std=c++17 -Wall -Wextra -Wpedantic -Iinclude src/canvas.cpp src/ppm.cpp src/lines.cpp src/lines_demo.cpp -o build/lines_demo
+./build/line_tests
+./build/lines_demo outputs/lines-clipping.ppm
+```
+
 The same commands work on Windows with MSYS2 UCRT64 `g++` from Git Bash.
-These commands cover the current foundation and polygon clipping only. Extend the build configuration
-and documented commands when the assigned algorithm modules are added.
+The CMake build includes all implemented modules and their checks.
 
 On the current macOS machine, the compiler defaults to an SDK that its linker
 cannot read. Both direct builds were verified by adding this flag to the compiler
@@ -106,8 +115,8 @@ build on this machine may need the equivalent configuration option
 | Common points, RGB colors, polygons and rectangle types | Implemented |
 | Pixel buffer and bounds-safe pixel writes | Implemented |
 | Binary PPM image export | Implemented |
-| Bresenham line drawing and line clipping | Assigned; not implemented |
-| Scanline polygon filling | Assigned; not implemented |
+| Bresenham line drawing and Cohen-Sutherland line clipping | Implemented on `feat/cp1-lines`; see [lines.md](docs/algorithms/lines.md) |
+| Scanline polygon filling | Implemented; see [polygon_fill.md](docs/algorithms/polygon_fill.md) |
 | Sutherland-Hodgman polygon clipping against convex boundaries | Implemented on `feat/cp1-polygon-clipping`; see [polygon-clipping.md](docs/algorithms/polygon-clipping.md) |
 | Midpoint circle and ellipse drawing | Assigned; not implemented |
 | Cubic Bézier evaluation and rendering | Assigned; not implemented |

@@ -18,6 +18,16 @@ if requested by the lecturer.
 
 ## Recorded evidence
 
+### Lines before and after clipping (`lines-clipping.png`)
+
+- Author: Muthii Eric Macharia, 166390, covering the lines assignment.
+- Algorithms: integer Bresenham drawing and Cohen-Sutherland rectangular clipping.
+- Source commit: `b9c6749` on `feat/cp1-lines`.
+- Commands: `lines_demo outputs/lines-clipping.ppm`, then
+  `sips -s format png --out docs/evidence/lines-clipping.png outputs/lines-clipping.ppm`.
+- Project component: diamond-and-cross fabric motif drawn before and after
+  clipping to the cream rectangular fabric window.
+
 ### Polygon clipping before and after (`polygon-clipping.png`)
 
 - Author: Murega Kelvin Mutwiri, 166914.
