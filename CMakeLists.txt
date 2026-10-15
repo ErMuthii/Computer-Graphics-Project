@@ -27,4 +27,13 @@ if(BUILD_TESTING)
     kitenge_warnings(foundation_tests)
     add_test(NAME foundation COMMAND foundation_tests
         ${CMAKE_CURRENT_BINARY_DIR}/test-output/foundation.ppm)
+    
+    add_library(kitenge_polygon_fill src/polygon_fill.cpp)
+    target_link_libraries(kitenge_polygon_fill PUBLIC kitenge_foundation)
+    kitenge_warnings(kitenge_polygon_fill)
+
+    add_executable(polygon_fill_tests tests/polygon_fill_tests.cpp)
+    target_link_libraries(polygon_fill_tests PRIVATE kitenge_polygon_fill)
+    kitenge_warnings(polygon_fill_tests)
+    add_test(NAME polygon_fill COMMAND polygon_fill_tests)
 endif()
