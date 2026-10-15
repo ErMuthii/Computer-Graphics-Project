@@ -24,6 +24,10 @@ add_library(kitenge_polygon_clip src/polygon_clip.cpp)
 target_link_libraries(kitenge_polygon_clip PUBLIC kitenge_foundation)
 kitenge_warnings(kitenge_polygon_clip)
 
+add_executable(polygon_clip_demo src/polygon_clip_demo.cpp)
+target_link_libraries(polygon_clip_demo PRIVATE kitenge_polygon_clip)
+kitenge_warnings(polygon_clip_demo)
+
 include(CTest)
 if(BUILD_TESTING)
     add_executable(foundation_tests tests/foundation_tests.cpp)
