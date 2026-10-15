@@ -31,4 +31,9 @@ if(BUILD_TESTING)
     kitenge_warnings(foundation_tests)
     add_test(NAME foundation COMMAND foundation_tests
         ${CMAKE_CURRENT_BINARY_DIR}/test-output/foundation.ppm)
+
+    add_executable(polygon_clip_tests tests/polygon_clip_tests.cpp)
+    target_link_libraries(polygon_clip_tests PRIVATE kitenge_polygon_clip)
+    kitenge_warnings(polygon_clip_tests)
+    add_test(NAME polygon_clip COMMAND polygon_clip_tests)
 endif()
