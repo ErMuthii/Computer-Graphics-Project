@@ -11,8 +11,9 @@ is an advanced goal developed after the graphics foundation works.
 CP1 implements project-related graphics algorithms in pure C++ before the later
 transformation, animation and OpenGL checkpoints. The shared foundation is ready:
 a pixel canvas, common geometry types, PPM image export, a diagnostic image and
-foundation checks. Line drawing and clipping, polygon filling, and polygon
-clipping are implemented. Circle, ellipse and curve modules remain planned.
+foundation checks. Line drawing and clipping, polygon filling, polygon
+clipping, and circle and ellipse drawing are implemented. The merged Bézier
+module evaluates and samples curves; raster rendering follows integration.
 See [workfile.md](workfile.md) for the assignments and workflow.
 The foundation is published on `main`; each teammate can pull it and create the
 branch listed for their assignment. The initial foundation review was waived
@@ -92,6 +93,15 @@ c++ -std=c++17 -Wall -Wextra -Wpedantic -Iinclude src/canvas.cpp src/ppm.cpp src
 ./build/lines_demo outputs/lines-clipping.ppm
 ```
 
+Circle and ellipse checks and decorative swatch demonstration:
+
+```sh
+c++ -std=c++17 -Wall -Wextra -Wpedantic -Iinclude src/canvas.cpp src/circles.cpp tests/circle_tests.cpp -o build/circle_tests
+c++ -std=c++17 -Wall -Wextra -Wpedantic -Iinclude src/canvas.cpp src/ppm.cpp src/circles.cpp src/circles_demo.cpp -o build/circles_demo
+./build/circle_tests
+./build/circles_demo outputs/circles-ellipses.ppm
+```
+
 The same commands work on Windows with MSYS2 UCRT64 `g++` from Git Bash.
 The CMake build includes all implemented modules and their checks.
 
@@ -118,8 +128,8 @@ build on this machine may need the equivalent configuration option
 | Bresenham line drawing and Cohen-Sutherland line clipping | Implemented on `feat/cp1-lines`; see [lines.md](docs/algorithms/lines.md) |
 | Scanline polygon filling | Implemented; see [polygon_fill.md](docs/algorithms/polygon_fill.md) |
 | Sutherland-Hodgman polygon clipping against convex boundaries | Implemented on `feat/cp1-polygon-clipping`; see [polygon-clipping.md](docs/algorithms/polygon-clipping.md) |
-| Midpoint circle and ellipse drawing | Assigned; not implemented |
-| Cubic Bézier evaluation and rendering | Assigned; not implemented |
+| Midpoint circle and ellipse drawing | Implemented on `feat/cp1-circles-ellipses`; see [circles-ellipses.md](docs/algorithms/circles-ellipses.md) |
+| Cubic Bézier evaluation and sampling | Implemented on `feat/cp1-bezier`; raster rendering pending integration |
 | Integrated fabric swatch and simplified dress | Planned after module integration |
 
 The foundation diagnostic is a grid of RGB color blocks written pixel by pixel.

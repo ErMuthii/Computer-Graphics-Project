@@ -28,6 +28,16 @@ if requested by the lecturer.
 - Project component: diamond-and-cross fabric motif drawn before and after
   clipping to the cream rectangular fabric window.
 
+### Circle and ellipse motifs (`circles-ellipses.png`)
+
+- Author: Muthii Eric Macharia, 166390, covering the circles/ellipses assignment.
+- Algorithms: midpoint circle rasterization and midpoint ellipse rasterization.
+- Source commit: `807a7e0` on `feat/cp1-circles-ellipses`.
+- Commands: `circles_demo outputs/circles-ellipses.ppm`, then
+  `sips -s format png --out docs/evidence/circles-ellipses.png outputs/circles-ellipses.ppm`.
+- Project component: round and oval decorative fabric medallions with a central
+  strip suggesting dress buttons.
+
 ### Polygon clipping before and after (`polygon-clipping.png`)
 
 - Author: Murega Kelvin Mutwiri, 166914.
