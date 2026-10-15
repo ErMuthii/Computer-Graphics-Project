@@ -1,7 +1,9 @@
 #include "kitenge/curves.hpp"
+#include "kitenge/lines.hpp"
 
 #include <cmath>
 #include <cstddef>
+#include <limits>
 #include <stdexcept>
 
 namespace kitenge {
@@ -23,6 +25,18 @@ void requireValidSegments(int segments) {
     if (segments < 1 || segments > kMaxBezierSegments) {
         throw std::invalid_argument("cubic Bezier segments must be between 1 and 10000");
     }
+}
+
+Point rasterPoint(Point2D point) {
+    constexpr double lowest = static_cast<double>(std::numeric_limits<int>::min());
+    constexpr double highest = static_cast<double>(std::numeric_limits<int>::max());
+    if (!std::isfinite(point.x) || !std::isfinite(point.y) ||
+        point.x < lowest || point.x > highest ||
+        point.y < lowest || point.y > highest) {
+        throw std::out_of_range("cubic Bezier raster coordinates must fit in an int");
+    }
+    return {static_cast<int>(std::lround(point.x)),
+            static_cast<int>(std::lround(point.y))};
 }
 
 }  // namespace
@@ -69,6 +83,17 @@ std::vector<Point2D> sampleCubicBezier(const std::array<Point2D, 4>& control,
         samples.push_back(evaluateCubicBezier(control, t));
     }
     return samples;
+}
+
+void drawCubicBezier(Canvas& canvas, const std::array<Point2D, 4>& control,
+                     Color color, int segments) {
+    const auto samples = sampleCubicBezier(control, segments);
+    Point previous = rasterPoint(samples.front());
+    for (std::size_t i = 1; i < samples.size(); ++i) {
+        const Point next = rasterPoint(samples[i]);
+        drawLine(canvas, previous, next, color);
+        previous = next;
+    }
 }
 
 }  // namespace kitenge
