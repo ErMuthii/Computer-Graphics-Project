@@ -15,3 +15,16 @@ The planned evidence set is:
 The current foundation diagnostic only verifies the pixel canvas and image export;
 it is not sufficient CP1 evidence by itself. A PDF can combine the final screenshots
 if requested by the lecturer.
+
+## Recorded evidence
+
+### Polygon clipping before and after (`polygon-clipping.png`)
+
+- Author: Murega Kelvin Mutwiri, 166914.
+- Algorithm: Sutherland-Hodgman polygon clipping against convex boundaries.
+- Source commit: `ecc73fc` on `feat/cp1-polygon-clipping`.
+- Command: `polygon_clip_demo outputs/polygon-clipping.ppm`, converted to PNG
+  for viewing.
+- Project component: Kitenge motifs cropped to a rectangular fabric window and
+  to a trapezoid skirt panel. Outlines use a temporary preview helper until the
+  lines and polygon fill modules are integrated.
