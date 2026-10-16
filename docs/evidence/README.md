@@ -1,5 +1,8 @@
 # Checkpoint 1 evidence
 
+The [five-page evidence PDF](cp1-evidence.pdf) collects the selected images for
+submission or offline review. The original PNGs and generation details are below.
+
 Commit selected screenshots here when the algorithms have been implemented.
 Generated images in `outputs/` remain reproducible working files.
 

@@ -11,6 +11,7 @@ is an advanced goal developed after the graphics foundation works.
 The images below show the CP1 graphics algorithms in the project. The original
 PNG files are in the [evidence folder](docs/evidence/), with authorship, source
 commits, and reproduction commands in its [evidence notes](docs/evidence/README.md).
+For a single file, use the [five-page evidence PDF](docs/evidence/cp1-evidence.pdf).
 
 ### Polygon filling: motif and dress panels
 
