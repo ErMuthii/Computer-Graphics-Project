@@ -574,4 +574,98 @@ StudioHooks makePatternHooks(PatternSettingsProvider provider) {
     return hooks;
 }
 
+// --- Scene options ---------------------------------------------------------------
+
+double degreesToRadians(double degrees) { return degrees * 3.14159265358979323846 / 180.0; }
+double radiansToDegrees(double radians) { return radians * 180.0 / 3.14159265358979323846; }
+
+namespace {
+
+double parseNumber(const std::string& flag, const char* text) {
+    const std::string value = text;
+    std::size_t used = 0;
+    double number = 0.0;
+    try {
+        number = std::stod(value, &used);
+    } catch (const std::exception&) {
+        used = 0;
+    }
+    if (used == 0 || used != value.size() || !std::isfinite(number)) {
+        throw std::invalid_argument(flag + " needs a finite number, not '" + value + "'");
+    }
+    return number;
+}
+
+int parseIndex(const std::string& flag, const char* text, int count) {
+    const double number = parseNumber(flag, text);
+    if (number != std::floor(number) || number < 0 || number >= count) {
+        throw std::invalid_argument(flag + " must be a whole number from 0 to " +
+                                    std::to_string(count - 1));
+    }
+    return static_cast<int>(number);
+}
+
+} // namespace
+
+bool parsePatternSceneOption(int argc, const char* const* argv, int& index,
+                             PatternSceneOptions& options) {
+    const std::string flag = argv[index];
+    const auto value = [&](int offset) -> const char* {
+        if (index + offset >= argc) throw std::invalid_argument(flag + " is missing a value");
+        return argv[index + offset];
+    };
+    PatternSettings& s = options.settings;
+    if (flag == "--motif") {
+        options.state.motif = parseIndex(flag, value(1), studioMotifCount);
+        index += 1;
+    } else if (flag == "--palette") {
+        options.state.palette = parseIndex(flag, value(1), studioPaletteCount);
+        index += 1;
+    } else if (flag == "--angle") {
+        s.transform.angleRadians = degreesToRadians(parseNumber(flag, value(1)));
+        index += 1;
+    } else if (flag == "--scale") {
+        const double scale = parseNumber(flag, value(1));
+        // The garment view multiplies by kGarmentPatternZoom, so both views
+        // must stay within the supported range.
+        if (scale > kMaxPatternScale || scale * kGarmentPatternZoom < kMinPatternScale) {
+            throw std::invalid_argument("--scale must be from " +
+                                        std::to_string(kMinPatternScale / kGarmentPatternZoom) +
+                                        " to " + std::to_string(kMaxPatternScale));
+        }
+        s.transform.scale = scale;
+        index += 1;
+    } else if (flag == "--pitch") {
+        const Point2D pitch{parseNumber(flag, value(1)), parseNumber(flag, value(2))};
+        if (pitch.x * kGarmentPatternZoom < kMinTilePitch || pitch.y * kGarmentPatternZoom < kMinTilePitch) {
+            throw std::invalid_argument("--pitch values must be at least " +
+                                        std::to_string(kMinTilePitch / kGarmentPatternZoom));
+        }
+        s.tilePitch = pitch;
+        index += 2;
+    } else if (flag == "--translate") {
+        s.transform.translation = {parseNumber(flag, value(1)), parseNumber(flag, value(2))};
+        index += 2;
+    } else if (flag == "--reflect-x") {
+        s.transform.reflectX = true;
+    } else if (flag == "--reflect-y") {
+        s.transform.reflectY = true;
+    } else {
+        return false;
+    }
+    ++index;
+    return true;
+}
+
+const char* patternSceneOptionsUsage() {
+    return "  --motif N          starter motif 0-2\n"
+           "  --palette N        palette 0-2\n"
+           "  --angle DEGREES    pattern rotation, clockwise on screen\n"
+           "  --scale S          pattern scale (0.1 to 20)\n"
+           "  --pitch X Y        tile pitch in pixels (at least 8)\n"
+           "  --translate X Y    pattern translation in pixels\n"
+           "  --reflect-x        mirror motifs left-right\n"
+           "  --reflect-y        mirror motifs top-bottom\n";
+}
+
 } // namespace kitenge
