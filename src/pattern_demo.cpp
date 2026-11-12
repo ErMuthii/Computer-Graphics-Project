@@ -175,6 +175,28 @@ void profile() {
     dense.transform.angleRadians = 0.6;
     time("Fabric, pitch 8 px", dense, studioFabricArea());
     time("Skirt, pitch 8 px", garmentPatternSettings(dense), studioSkirt());
+
+    // A whole desktop frame: shell plus fabric and garment hooks, averaged.
+    const auto frame = [](const char* label, const PatternSettings& settings, bool useHooks = true) {
+        const StudioHooks hooks = useHooks
+            ? makePatternHooks([settings](const StudioState&) { return settings; })
+            : StudioHooks{};
+        Canvas canvas(studioWidth, studioHeight, {0, 0, 0});
+        StudioState state;
+        state.motif = 2;
+        constexpr int frames = 20;
+        const auto start = std::chrono::steady_clock::now();
+        for (int i = 0; i < frames; ++i) renderStudio(canvas, state, hooks);
+        const auto ms = std::chrono::duration<double, std::milli>(std::chrono::steady_clock::now() - start).count();
+        std::cout << label << ": renderStudio " << ms / frames << " ms per frame\n";
+    };
+    frame("Studio frame, starter scene without pattern hooks", defaultStudioPatternSettings(), false);
+    frame("Studio frame, default settings", defaultStudioPatternSettings());
+    PatternSettings densest = defaultStudioPatternSettings();
+    densest.tilePitch = {kMinTilePitch / kGarmentPatternZoom, kMinTilePitch / kGarmentPatternZoom};
+    densest.transform.scale = kMinPatternScale / kGarmentPatternZoom;
+    densest.transform.angleRadians = 0.6;
+    frame("Studio frame, densest accepted options (pitch 8, scale 0.1)", densest);
 }
 
 } // namespace
