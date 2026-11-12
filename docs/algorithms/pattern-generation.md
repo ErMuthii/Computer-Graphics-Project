@@ -1,6 +1,7 @@
 # Pattern generation: repetition and garment clipping
 
-Owner: Murega Kelvin Mutwiri, 166914. Branch: `feat/cp2-pattern-engine`.
+Owner: Murega Kelvin Mutwiri, 166914. Branches: `feat/cp2-pattern-engine`
+(engine) and `feat/cp3-pattern-model-integration` (desktop integration, below).
 
 The pattern engine turns one motif into a repeating fabric and fits that fabric
 inside a convex region: the fabric preview rectangle, or the bodice or skirt
@@ -297,7 +298,83 @@ See `docs/evidence/README.md` for the images.
 - `starterMotifShape()` reproduces the three starter shapes as local data until
   Deborah's motif module replaces it.
 - Strokes are one pixel wide (CP1 Bresenham).
-- The desktop app was wired to the hooks but not run on this machine, because
-  GLFW and GLEW are not installed here. Its rendering path is the same
-  `renderStudio` call the headless tests check. Verify it with real key presses
-  in a graphical session before CP3.
+- The desktop was checked with scripted key events and frame captures (see CP3
+  below). Physical key presses still need a manual check in the running window.
+
+## CP3: the pattern in the desktop studio
+
+Branch: `feat/cp3-pattern-model-integration`.
+
+### Both views update immediately
+
+The desktop redraws whenever a key changes the state. The hooks read the motif,
+palette and pattern settings on every render, so nothing is cached between
+frames that could go stale. The desktop smoke test (`desktop_smoke`) now records
+the frame before the scripted M and P presses and the frame right after them.
+It fails unless the fabric preview, the bodice and the skirt have all changed in
+that very next frame. The headless `studio hooks` test checks the same for
+motif, palette and transform changes.
+
+Transformation controls belong to Andrew (input) and Jeremy (state), so no keys
+were added here. For verification, both programs accept the same scene options:
+
+```text
+--motif N  --palette N  --angle DEGREES  --scale S  --pitch X Y
+--translate X Y  --reflect-x  --reflect-y
+```
+
+`--angle` is given in degrees and converted with `degreesToRadians`, following
+the contract (radians in the maths, degrees for people). Every option is
+validated so that both views stay within the engine's limits; the garment view
+works at half scale, so `--scale` must be at least 0.1 and `--pitch` at least 8.
+
+### The renderer stays independent of OpenGL
+
+`kitenge_pattern` links only the Pure C++ studio core. No pattern or studio file
+includes a GL, GLEW or GLFW header, and the `build-core` tree builds and passes
+all of its tests with `KITENGE_BUILD_DESKTOP=OFF`. OpenGL only displays the
+finished canvas as a texture.
+
+### Desktop result equals headless result
+
+`ppm_compare` compares two PPM images pixel for pixel and can write a
+difference image. With `-DKITENGE_GUI_TESTS=ON`, CTest runs
+`tests/desktop_matches_headless.cmake` for three scenes:
+
+1. `kitenge_studio --capture … --exit-after-capture <scene>` reads the OpenGL
+   back buffer after real presentation.
+2. `studio_render … <scene>` renders the same scene without a window.
+3. `ppm_compare` requires the two images to be identical.
+
+| Scene | Options | Result |
+| --- | --- | --- |
+| default | none | identical, 912 000 pixels |
+| transformed | `--motif 2 --palette 1 --angle 20 --scale 0.9` | identical |
+| reflected | `--motif 1 --palette 2 --angle -35 --scale 1.3 --pitch 52 60 --translate 17 -9 --reflect-x` | identical |
+
+Measured on Windows 11 with Intel Iris Xe Graphics (OpenGL 3.3, GLFW and GLEW
+from MSYS2 UCRT64). The texture uses nearest filtering and the window opens at
+the canvas size, so every canvas pixel reaches exactly one screen pixel. As a
+check that the comparison can fail, comparing the default scene with the
+transformed one reports 319 142 differing pixels.
+
+### Profiling before adding density controls
+
+`pattern_demo` also times whole studio frames (`renderStudio` with the hooks,
+Release build, average of 20 frames):
+
+| Frame | Time |
+| --- | --- |
+| Starter scene, no pattern hooks (shell only) | ≈ 4 ms |
+| Pattern hooks, default settings | ≈ 9 ms |
+| Pattern hooks, densest accepted options (pitch 8, scale 0.1, rotated) | ≈ 36 ms |
+
+The desktop only redraws when the state changes, or every frame while
+animation plays. Default settings fit comfortably in a 60 Hz frame (16.7 ms).
+The densest settings take about 36 ms, so a redraw after a key press is still
+instant, but continuous animation at that density would run near 28 fps.
+
+Recommendation for the controls: keep the current bounds (`kMinTilePitch`,
+`kMinPatternScale`, `kMaxPatternTiles`) and do not add unbounded density.
+If animation must reach 60 fps at high density, cache the clipped geometry per
+settings value, or raise the minimum pitch, before widening the range.
