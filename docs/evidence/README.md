@@ -65,3 +65,43 @@ if requested by the lecturer.
 - Project component: Kitenge motifs cropped to a rectangular fabric window and
   to a trapezoid skirt panel. Outlines use a temporary preview helper until the
   lines and polygon fill modules are integrated.
+
+## Checkpoint 2 evidence: pattern engine
+
+Author: Murega Kelvin Mutwiri, 166914. Source commit: `3a38393` on
+`feat/cp2-pattern-engine` (engine in `1c58454`). All three images come
+from the same `renderPattern` function described in
+[pattern generation](../algorithms/pattern-generation.md).
+
+Commands, from a configured `build-core`:
+
+```sh
+./build-core/pattern_demo outputs
+python -c "import sys;from PIL import Image;Image.open(sys.argv[1]).save(sys.argv[2])" outputs/pattern-clipping.ppm docs/evidence/pattern-clipping.png
+```
+
+(repeat the conversion for `pattern-swatch` and `pattern-mannequin`).
+
+### Repeat clipping before and after (`pattern-clipping.png`)
+
+- Left: every tile in the computed range drawn whole over a slanted convex
+  panel, showing how far the repeat spills past the edges.
+- Right: the same tiles after clipping. Fills use Sutherland-Hodgman on
+  ear-clipped triangles of the concave cross; the sampled Bezier arches use
+  Cyrus-Beck segment clipping; a scanline-filled panel mask guards the pixels.
+- Settings: pitch 66 x 72, rotation 0.25 rad, scale 1.2, alternating colours.
+
+### Transformed swatch (`pattern-swatch.png`)
+
+- Left: the untransformed repeat (pitch 64 x 70).
+- Right: the same motif rotated 30 degrees (clockwise on screen), scaled 0.8,
+  reflected in y about pivot (0, 6), translated by (17, -9), pitch 52 x 56.
+  Each copy turns in place because the tile offset is applied after the local
+  transform.
+
+### Patterned mannequin (`pattern-mannequin.png`)
+
+- The studio scene rendered through `makePatternHooks`: the fabric preview and
+  both dress panels show the cross motif, palette 2, rotated 20 degrees and
+  scaled 0.9. The bodice and skirt share one pattern origin, so the repeat
+  continues across the waist; head, limbs and outlines are unchanged.
