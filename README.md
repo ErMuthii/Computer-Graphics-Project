@@ -1,10 +1,35 @@
 # Kitenge Pattern Designer and Virtual Dress Preview
 
+## Desktop starter (new)
+
+A separate OpenGL desktop target now displays a Pure C++ fabric preview and a
+static 2D mannequin. It supports motif/palette selection, reset, resize and PPM
+export. Existing CP1 demonstrations remain available.
+
+See [desktop setup, controls and team integration contracts](docs/desktop-starter.md).
+Transformations and animation remain the team's next implementation work.
+
+## CP2 and CP3 team implementation guides
+
+Start with the [detailed team README](docs/team/README.md) for setup, Git workflow,
+shared contracts, integration order and checkpoint acceptance criteria.
+
+| Member | Responsibility and guide |
+| --- | --- |
+| Waruhiu Jeremy Kang'ethe (166263) | [Transformation mathematics](docs/team/README.md#jeremy-transformation-mathematics) |
+| Muthii Eric Macharia (166390) | [Application and integration](docs/team/README.md#eric-application-and-integration) |
+| Deborah Rehana (168656) | [Motifs, palettes and mannequin](docs/team/README.md#deborah-motifs-palettes-and-mannequin) |
+| Murega Kelvin Mutwiri (166914) | [Repetition and garment clipping](docs/team/README.md#kelvin-repetition-and-garment-clipping) |
+| Sayialel Eric Lenina (161492) | [Animation and frame generation](docs/team/README.md#lenina-animation-and-frame-generation) |
+| Andrew Karanja Gathirwa (167144) | [Interaction and curve integration](docs/team/README.md#andrew-interaction-and-curve-integration) |
+
+These are implementation assignments for the next checkpoints, not completed features.
+
 A computer graphics semester project for designing geometric Kitenge-inspired
 fabric patterns and previewing them on a simplified dress. The planned final
-application includes selectable motif shapes and color combinations, a color
-grading index for comparing palettes, and a dress preview. Live camera alignment
-is an advanced goal developed after the graphics foundation works.
+application through CP3 includes selectable predefined motifs, palettes,
+transformations, animation and a static 2D mannequin dress preview. Automatic
+palette scoring and camera alignment are outside the agreed CP3 scope.
 
 ## Visual evidence
 
@@ -174,9 +199,10 @@ workfile.md             Temporary CP1 collaboration plan
 
 ## Known limitations
 
-- Current output is static; there is no live window, dress scene or camera input yet.
-- Pattern generation, palette comparison, transformations and OpenGL integration
-  are not part of the implemented foundation.
+- The CP1 demos remain static. The new optional desktop starter provides a live
+  OpenGL window, fixed motif repetition, palette switching and a static 2D dress.
+- General motif editing, matrix transformations, animation, palette scoring and
+  camera input remain future work. Starter shapes and repetition are scaffolding.
 - PPM display support depends on the viewer. A presentation copy may be converted
   to PNG without changing the pure C++ rendering implementation.
 - CP1 uses a simplified 2D dress; future previews show style and pattern placement,
