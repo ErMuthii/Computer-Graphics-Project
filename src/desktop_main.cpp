@@ -7,6 +7,7 @@
 #endif
 #include <GLFW/glfw3.h>
 #include "kitenge/studio.hpp"
+#include "kitenge/pattern.hpp"
 #include "kitenge/ppm.hpp"
 #include <algorithm>
 #include <cstddef>
@@ -19,7 +20,8 @@
 namespace {
 struct App {
     kitenge::StudioState state;
-    kitenge::StudioHooks hooks;
+    // Fabric and garment interiors come from the reusable pattern engine.
+    kitenge::StudioHooks hooks=kitenge::makePatternHooks();
     bool dirty=true;
     bool exportRequested=false;
     std::filesystem::path exportPath="outputs/studio.ppm";
