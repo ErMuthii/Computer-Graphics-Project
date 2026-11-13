@@ -142,3 +142,37 @@ Captured on Windows 11, Intel Iris Xe Graphics, OpenGL 3.3.
   with the same two factors multiplied in both orders. Each panel shows the
   original as a ghost, the pivot and the images of the local axes. See
   [transformations.md](../algorithms/transformations.md).
+
+## Checkpoint 2 evidence: motifs, palettes and mannequin
+
+Author: Deborah Rehana, 168656. Source commit: `74db58f` on
+`feat/cp2-motif-model-data`
+See
+[motifs.md](../algorithms/motifs.md).
+
+Commands, from a configured `build-core`:
+
+```sh
+./build-core/motif_demo outputs/motif-catalog.ppm
+./build-core/studio_render outputs/motif-studio.ppm --motif 4 --palette 3
+```
+
+Both PPM files were converted to PNG for viewing without changing any pixels.
+
+### Motif catalog and unpatterned mannequin (`motif-catalog.png`)
+
+- Algorithms: CP1 even-odd scanline fill for every motif fill, dress panel and
+  limb; Bresenham lines for strokes, frames and outlines; midpoint ellipse for
+  the head outline; cubic Bezier sampling (Andrew's CP1 evaluator) for the
+  SUNBURST petals.
+- Left: the five catalog motifs (columns) in the four palettes (rows), each
+  drawn at 2x in its local frame. The grey square is the [-25, 25] extent and
+  the grey cross the local origin.
+- Right: the static mannequin with plain dress panels. Red markers show the
+  vertices of the two convex panels that the pattern is clipped against.
+
+### Catalog in the integrated studio (`motif-studio.png`)
+
+- The SUNBURST motif in the INDIGO palette, rendered headlessly by the studio.
+  The fabric preview and the dress use the same catalog motif, palette and
+  role mapping (Kelvin's pattern engine places and clips the copies).
