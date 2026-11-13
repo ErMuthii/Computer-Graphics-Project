@@ -5,6 +5,16 @@
 namespace kitenge {
 constexpr int studioWidth = 1200;
 constexpr int studioHeight = 760;
+constexpr int studioMotifCount = 3;
+constexpr int studioPaletteCount = 3;
+struct StudioPalette { Color background, primary, secondary; };
+// Throws std::out_of_range for an index outside [0, studioPaletteCount).
+StudioPalette studioPalette(int index);
+// Scene regions shared by the shell (outlines) and the fabric/garment hooks
+// (fills), so both always use the same geometry. All three are convex.
+const Polygon& studioFabricArea();
+const Polygon& studioBodice();
+const Polygon& studioSkirt();
 enum class StudioAction { NextMotif, NextPalette, TogglePlayback, Reset };
 struct StudioState {
     int motif = 0;

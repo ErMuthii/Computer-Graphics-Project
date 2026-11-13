@@ -12,8 +12,7 @@ namespace kitenge {
 namespace {
 constexpr Color paper{246,240,227}, ink{49,57,37}, brown{65,42,35};
 constexpr Color muted{111,105,89}, skin{187,156,121}, gold{238,174,46};
-struct Palette { Color background, primary, secondary; };
-constexpr std::array<Palette,3> palettes{{
+constexpr std::array<StudioPalette,studioPaletteCount> palettes{{
     {{242,221,175},{174,65,32},{48,81,57}},
     {{228,231,216},{40,96,110},{190,113,43}},
     {{234,214,207},{110,56,86},{55,76,77}}
@@ -100,8 +99,8 @@ void mannequin(Canvas& c,const StudioState& state,const StudioHooks& hooks) {
     }
     drawEllipseMidpoint(c,{950,214},30,35,brown);
     box(c,910,640,31,9,brown); box(c,960,640,31,9,brown);
-    const Polygon bodice{{897,278},{1003,278},{985,377},{915,377}};
-    const Polygon skirt{{915,377},{985,377},{1041,574},{859,574}};
+    const Polygon& bodice=studioBodice();
+    const Polygon& skirt=studioSkirt();
     if(hooks.garment) hooks.garment(c,state);
     else {
         starterPattern(c,state,bodice,{897,278,1003,377});
@@ -111,10 +110,26 @@ void mannequin(Canvas& c,const StudioState& state,const StudioHooks& hooks) {
     box(c,914,374,72,8,brown);
 }
 } // namespace
+StudioPalette studioPalette(int index) {
+    if(index<0||index>=studioPaletteCount) throw std::out_of_range("Unknown studio palette");
+    return palettes[static_cast<std::size_t>(index)];
+}
+const Polygon& studioFabricArea() {
+    static const Polygon area{{52,202},{696,202},{696,648},{52,648}};
+    return area;
+}
+const Polygon& studioBodice() {
+    static const Polygon bodice{{897,278},{1003,278},{985,377},{915,377}};
+    return bodice;
+}
+const Polygon& studioSkirt() {
+    static const Polygon skirt{{915,377},{985,377},{1041,574},{859,574}};
+    return skirt;
+}
 void applyAction(StudioState& s,StudioAction action) {
     switch(action) {
-        case StudioAction::NextMotif: s.motif=(s.motif+1)%3; break;
-        case StudioAction::NextPalette: s.palette=(s.palette+1)%3; break;
+        case StudioAction::NextMotif: s.motif=(s.motif+1)%studioMotifCount; break;
+        case StudioAction::NextPalette: s.palette=(s.palette+1)%studioPaletteCount; break;
         case StudioAction::TogglePlayback: s.playing=!s.playing; break;
         case StudioAction::Reset: s=StudioState{}; break;
     }
@@ -128,7 +143,7 @@ void advanceStudio(StudioState& s,double dt,const StudioHooks& hooks) {
 void renderStudio(Canvas& c,const StudioState& s,const StudioHooks& hooks) {
     if(c.width()!=studioWidth||c.height()!=studioHeight)
         throw std::invalid_argument("Studio canvas must be 1200 x 760");
-    if(s.motif<0||s.motif>=3||s.palette<0||s.palette>=3)
+    if(s.motif<0||s.motif>=studioMotifCount||s.palette<0||s.palette>=studioPaletteCount)
         throw std::invalid_argument("Unknown starter motif or palette");
     c.clear(paper);
     box(c,0,0,studioWidth,110,brown);
@@ -138,7 +153,7 @@ void renderStudio(Canvas& c,const StudioState& s,const StudioHooks& hooks) {
     text(c,"01  FABRIC PREVIEW",40,141,3,ink);
     text(c,"02  MODEL PREVIEW",762,141,3,ink);
     box(c,40,190,668,470,{226,213,192});
-    const Polygon fabric{{52,202},{696,202},{696,648},{52,648}};
+    const Polygon& fabric=studioFabricArea();
     if(hooks.fabric) hooks.fabric(c,s); else starterPattern(c,s,fabric,{52,202,696,648});
     outline(c,fabric,brown);
     drawLine(c,{735,142},{735,661},{209,199,178});

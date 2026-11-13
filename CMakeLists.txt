@@ -73,8 +73,20 @@ add_library(kitenge_studio_core src/studio.cpp)
 target_link_libraries(kitenge_studio_core PUBLIC kitenge_polygon_fill
     kitenge_polygon_clip kitenge_lines kitenge_circles)
 kitenge_warnings(kitenge_studio_core)
+# Reusable repeat-pattern renderer behind the fabric and garment hooks.
+add_library(kitenge_pattern src/pattern.cpp)
+target_link_libraries(kitenge_pattern PUBLIC kitenge_studio_core)
+kitenge_warnings(kitenge_pattern)
+add_executable(pattern_demo src/pattern_demo.cpp)
+target_link_libraries(pattern_demo PRIVATE kitenge_pattern kitenge_curves)
+kitenge_warnings(pattern_demo)
+# Pixel comparison of two PPM images (desktop capture against headless render).
+add_executable(ppm_compare src/ppm_compare.cpp)
+target_link_libraries(ppm_compare PRIVATE kitenge_foundation)
+kitenge_warnings(ppm_compare)
+
 add_executable(studio_render src/studio_render.cpp)
-target_link_libraries(studio_render PRIVATE kitenge_studio_core)
+target_link_libraries(studio_render PRIVATE kitenge_pattern)
 kitenge_warnings(studio_render)
 
 option(KITENGE_BUILD_DESKTOP "Build the GLFW/OpenGL desktop starter" OFF)
@@ -82,7 +94,7 @@ if(KITENGE_BUILD_DESKTOP)
     find_package(OpenGL REQUIRED)
     find_package(glfw3 3.3 CONFIG REQUIRED)
     add_executable(kitenge_studio src/desktop_main.cpp)
-    target_link_libraries(kitenge_studio PRIVATE kitenge_studio_core glfw OpenGL::GL)
+    target_link_libraries(kitenge_studio PRIVATE kitenge_pattern glfw OpenGL::GL)
     if(NOT APPLE)
         find_package(GLEW REQUIRED)
         target_link_libraries(kitenge_studio PRIVATE GLEW::GLEW)
@@ -96,6 +108,10 @@ if(BUILD_TESTING)
     target_link_libraries(studio_tests PRIVATE kitenge_studio_core)
     kitenge_warnings(studio_tests)
     add_test(NAME studio COMMAND studio_tests)
+    add_executable(pattern_tests tests/pattern_tests.cpp)
+    target_link_libraries(pattern_tests PRIVATE kitenge_pattern kitenge_curves)
+    kitenge_warnings(pattern_tests)
+    add_test(NAME pattern COMMAND pattern_tests)
     add_executable(foundation_tests tests/foundation_tests.cpp)
     target_link_libraries(foundation_tests PRIVATE kitenge_foundation)
     kitenge_warnings(foundation_tests)
@@ -131,4 +147,33 @@ if(BUILD_TESTING)
     target_link_libraries(circle_tests PRIVATE kitenge_circles)
     kitenge_warnings(circle_tests)
     add_test(NAME circles COMMAND circle_tests)
+
+    # Opens real windows, so it needs a graphical session; off by default.
+    option(KITENGE_GUI_TESTS "Compare desktop captures with headless renders" OFF)
+    if(KITENGE_BUILD_DESKTOP AND KITENGE_GUI_TESTS)
+        set(kitenge_scenes
+            "default|"
+            "transformed|--motif,2,--palette,1,--angle,20,--scale,0.9"
+            "reflected|--motif,1,--palette,2,--angle,-35,--scale,1.3,--pitch,52,60,--translate,17,-9,--reflect-x")
+        foreach(scene IN LISTS kitenge_scenes)
+            # "name|comma,separated,options": commas avoid splitting the list here.
+            string(FIND "${scene}" "|" bar)
+            string(SUBSTRING "${scene}" 0 ${bar} scene_name)
+            math(EXPR start "${bar} + 1")
+            string(SUBSTRING "${scene}" ${start} -1 scene_options)
+            add_test(NAME desktop_matches_headless_${scene_name}
+                COMMAND ${CMAKE_COMMAND}
+                    -DSTUDIO=$<TARGET_FILE:kitenge_studio>
+                    -DRENDER=$<TARGET_FILE:studio_render>
+                    -DCOMPARE=$<TARGET_FILE:ppm_compare>
+                    -DOUT=${CMAKE_CURRENT_BINARY_DIR}/test-output/desktop
+                    -DNAME=${scene_name}
+                    -DSCENE=${scene_options}
+                    -P ${CMAKE_CURRENT_SOURCE_DIR}/tests/desktop_matches_headless.cmake)
+            set_tests_properties(desktop_matches_headless_${scene_name} PROPERTIES RUN_SERIAL TRUE)
+        endforeach()
+        add_test(NAME desktop_smoke COMMAND kitenge_studio --smoke-test
+            --capture ${CMAKE_CURRENT_BINARY_DIR}/test-output/desktop/smoke.ppm)
+        set_tests_properties(desktop_smoke PROPERTIES RUN_SERIAL TRUE)
+    endif()
 endif()
