@@ -77,6 +77,29 @@ Failures in shader compilation, linking, window creation and GL operations retur
 nonzero and report the cause in the terminal. A failed user export reports an
 error and leaves the application running.
 
+## Pattern scene options and desktop/headless comparison
+
+The fabric and dress interiors come from the pattern engine
+(`docs/algorithms/pattern-generation.md`). `kitenge_studio` and `studio_render`
+accept the same scene options, so both can be run at identical state and
+settings:
+
+```sh
+./build-desktop/kitenge_studio --motif 2 --palette 1 --angle 20 --scale 0.9
+./build-core/studio_render outputs/studio.ppm --motif 2 --palette 1 --angle 20 --scale 0.9
+```
+
+Options: `--motif N`, `--palette N`, `--angle DEGREES`, `--scale S`,
+`--pitch X Y`, `--translate X Y`, `--reflect-x`, `--reflect-y`. They are for
+verification and demonstrations, not a replacement for the planned controls.
+`--exit-after-capture` closes the window after `--capture` has saved its frame.
+
+`ppm_compare expected.ppm actual.ppm [difference.ppm]` reports whether two
+images are pixel-identical. In a graphical session, configure the desktop build
+with `-DKITENGE_GUI_TESTS=ON` to add CTest checks that open real windows:
+`desktop_smoke`, and three `desktop_matches_headless_*` scenes that capture
+the OpenGL back buffer and compare it with `studio_render`.
+
 ## Pure C++ path
 
 The default build still needs no OpenGL or GLFW:

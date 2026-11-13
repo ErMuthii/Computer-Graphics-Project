@@ -551,6 +551,52 @@ void testStudioHooks() {
         }
 }
 
+bool parses(std::vector<const char*> args, PatternSceneOptions& options) {
+    args.insert(args.begin(), "program");
+    const int argc = static_cast<int>(args.size());
+    for (int i = 1; i < argc;) {
+        if (!parsePatternSceneOption(argc, args.data(), i, options)) return false;
+    }
+    return true;
+}
+
+void testSceneOptions() {
+    PatternSceneOptions o;
+    require(parses({"--motif", "2", "--palette", "1", "--angle", "90", "--scale", "1.5", "--pitch",
+                    "40", "50", "--translate", "-3", "4.5", "--reflect-x", "--reflect-y"},
+                   o),
+            "All scene options must parse");
+    require(o.state.motif == 2 && o.state.palette == 1, "Motif and palette must be set");
+    require(near(o.settings.transform.angleRadians, kPi / 2.0), "Degrees must convert to radians");
+    require(near(radiansToDegrees(o.settings.transform.angleRadians), 90.0), "Radians convert back");
+    require(near(o.settings.transform.scale, 1.5) && near(o.settings.tilePitch.x, 40) &&
+                near(o.settings.tilePitch.y, 50),
+            "Scale and pitch must be set");
+    require(near(o.settings.transform.translation.x, -3) && near(o.settings.transform.translation.y, 4.5),
+            "Translation must accept negative and fractional values");
+    require(o.settings.transform.reflectX && o.settings.transform.reflectY, "Reflections must be set");
+    require(o.settings.alternateTiles, "Options start from the studio defaults");
+
+    PatternSceneOptions other;
+    require(!parses({"output.ppm"}, other), "Non-option arguments must be left to the caller");
+    for (const std::vector<const char*>& bad :
+         std::vector<std::vector<const char*>>{{"--motif", "3"}, {"--motif", "1.5"}, {"--palette", "-1"},
+                                               {"--angle", "abc"}, {"--angle", "inf"}, {"--scale", "0.05"},
+                                               {"--scale", "25"}, {"--pitch", "6", "40"}, {"--pitch", "40"},
+                                               {"--translate", "1"}, {"--motif"}, {"--scale", "2x"}}) {
+        PatternSceneOptions rejected;
+        require(throwsInvalid([&] { parses(bad, rejected); }),
+                std::string("Invalid option must be rejected: ") + bad[0]);
+    }
+
+    // Every accepted option combination renders in both views without throwing.
+    PatternSceneOptions edge;
+    require(parses({"--scale", "0.1", "--pitch", "8", "8", "--angle", "-720"}, edge), "Bounds parse");
+    Canvas canvas(studioWidth, studioHeight, {0, 0, 0});
+    const PatternSettings settings = edge.settings;
+    renderStudio(canvas, edge.state, makePatternHooks([settings](const StudioState&) { return settings; }));
+}
+
 } // namespace
 
 int main() {
@@ -567,6 +613,7 @@ int main() {
         {"no pixels outside destination", testNoPixelsOutside},
         {"continuity across the waist", testContinuityAcrossWaist},
         {"studio hooks", testStudioHooks},
+        {"scene options", testSceneOptions},
     };
     int failures = 0;
     for (const auto& [name, test] : tests) {

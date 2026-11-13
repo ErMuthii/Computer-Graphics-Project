@@ -113,6 +113,23 @@ void main(){ color=texture(canvasTexture,texCoord); }
         glBindVertexArray(vao_);glDrawArrays(GL_TRIANGLES,0,6);
     }
 };
+// True if any pixel inside the polygon's bounding box differs between frames.
+bool regionChanged(const kitenge::Canvas& a,const kitenge::Canvas& b,const kitenge::Polygon& region) {
+    double x0=region[0].x,y0=region[0].y,x1=x0,y1=y0;
+    for(const auto& p:region){x0=std::min(x0,p.x);y0=std::min(y0,p.y);x1=std::max(x1,p.x);y1=std::max(y1,p.y);}
+    for(int y=static_cast<int>(y0);y<=static_cast<int>(y1);++y)
+        for(int x=static_cast<int>(x0);x<=static_cast<int>(x1);++x) {
+            const auto p=a.pixelAt(x,y),q=b.pixelAt(x,y);
+            if(p.red!=q.red||p.green!=q.green||p.blue!=q.blue) return true;
+        }
+    return false;
+}
+void requireViewsUpdated(const kitenge::Canvas& before,const kitenge::Canvas& after,const char* what) {
+    if(!regionChanged(before,after,kitenge::studioFabricArea())||
+       !regionChanged(before,after,kitenge::studioBodice())||
+       !regionChanged(before,after,kitenge::studioSkirt()))
+        throw std::runtime_error(std::string(what)+" did not update the fabric and both dress panels in the next frame");
+}
 void capture(const std::filesystem::path& path,int w,int h) {
     std::vector<unsigned char> pixels(static_cast<std::size_t>(w)*h*3);
     glPixelStorei(GL_PACK_ALIGNMENT,1);glReadBuffer(GL_BACK);
@@ -126,16 +143,31 @@ void capture(const std::filesystem::path& path,int w,int h) {
 }
 } // namespace
 int main(int argc,char** argv) {
-    bool smoke=false;
+    bool smoke=false,exitAfterCapture=false;
     std::filesystem::path capturePath;
     App app;
-    for(int i=1;i<argc;++i) {
-        std::string arg=argv[i];
-        if(arg=="--smoke-test") smoke=true;
-        else if((arg=="--capture"||arg=="--export")&&i+1<argc) {
-            if(arg=="--capture") capturePath=argv[++i]; else app.exportPath=argv[++i];
-        } else {std::cerr<<"Usage: kitenge_studio [--smoke-test] [--capture frame.ppm] [--export image.ppm]\n";return 1;}
-    }
+    kitenge::PatternSceneOptions options;
+    try {
+        for(int i=1;i<argc;) {
+            if(kitenge::parsePatternSceneOption(argc,argv,i,options)) continue;
+            std::string arg=argv[i];
+            if(arg=="--smoke-test") smoke=true;
+            else if(arg=="--exit-after-capture") exitAfterCapture=true;
+            else if((arg=="--capture"||arg=="--export")&&i+1<argc) {
+                if(arg=="--capture") capturePath=argv[++i]; else app.exportPath=argv[++i];
+            } else {
+                std::cerr<<"Usage: kitenge_studio [--smoke-test] [--capture frame.ppm] [--exit-after-capture]"
+                           " [--export image.ppm] [options]\n"<<kitenge::patternSceneOptionsUsage();
+                return 1;
+            }
+            ++i;
+        }
+    } catch(const std::exception& e){std::cerr<<e.what()<<'\n';return 1;}
+    // Same state and pattern settings that studio_render uses for these options.
+    app.state=options.state;
+    app.hooks=kitenge::makePatternHooks(
+        [settings=options.settings](const kitenge::StudioState&){return settings;});
+    const kitenge::StudioState initial=options.state;
     glfwSetErrorCallback([](int code,const char* message){std::cerr<<"GLFW "<<code<<": "<<message<<'\n';});
     if(!glfwInit()) return 1;
     glfwWindowHint(GLFW_CONTEXT_VERSION_MAJOR,3);glfwWindowHint(GLFW_CONTEXT_VERSION_MINOR,3);
@@ -159,12 +191,14 @@ int main(int argc,char** argv) {
                  <<"\nM motif / P palette / R reset / S export / Esc close\n"<<std::flush;
         Presenter presenter;
         kitenge::Canvas canvas(kitenge::studioWidth,kitenge::studioHeight,{0,0,0});
+        kitenge::Canvas previousFrame=canvas;
         double previous=glfwGetTime();int frames=0;
         while(!glfwWindowShouldClose(window)) {
             if(smoke&&frames==1) {
                 key(window,GLFW_KEY_M,0,GLFW_PRESS,0);
                 key(window,GLFW_KEY_P,0,GLFW_PRESS,0);
-                if(app.state.motif!=1||app.state.palette!=1)
+                if(app.state.motif!=(initial.motif+1)%kitenge::studioMotifCount||
+                   app.state.palette!=(initial.palette+1)%kitenge::studioPaletteCount)
                     throw std::runtime_error("Selection callbacks failed");
             }
             if(smoke&&frames==3) {
@@ -177,6 +211,10 @@ int main(int argc,char** argv) {
             kitenge::advanceStudio(app.state,std::min(now-previous,0.1),app.hooks);previous=now;
             if(app.dirty||app.state.playing) {
                 kitenge::renderStudio(canvas,app.state,app.hooks);presenter.upload(canvas);app.dirty=false;
+                // The frame after the M and P presses must already show the new
+                // motif and palette in the fabric preview and on both panels.
+                if(smoke&&frames==1) requireViewsUpdated(previousFrame,canvas,"Motif and palette keys");
+                if(smoke&&frames==0) previousFrame=canvas;
             }
             if(app.exportRequested) {
                 try {kitenge::writePpm(canvas,app.exportPath);std::cout<<"Exported "<<app.exportPath<<'\n';}
@@ -186,14 +224,17 @@ int main(int argc,char** argv) {
             int w,h;glfwGetFramebufferSize(window,&w,&h);
             if(w>0&&h>0) {
                 presenter.draw(w,h);
-                if(!capturePath.empty()&&frames==(smoke?5:2)) capture(capturePath,w,h);
+                const bool captureNow=!capturePath.empty()&&frames==(smoke?5:2);
+                if(captureNow) capture(capturePath,w,h);
                 if(auto error=glGetError();error!=GL_NO_ERROR)
                     throw std::runtime_error("OpenGL error "+std::to_string(error));
                 glfwSwapBuffers(window);++frames;
+                if(captureNow&&exitAfterCapture&&!smoke) break;
             } else glfwWaitEventsTimeout(0.1);
             if(smoke&&frames>=6) break;
         }
-        if(smoke) std::cout<<"Desktop smoke test passed: shaders, upload, selection/reset callbacks, resize and presentation.\n";
+        if(smoke) std::cout<<"Desktop smoke test passed: shaders, upload, selection/reset callbacks, "
+                            "pattern views updated in the next frame, resize and presentation.\n";
     } catch(const std::exception& e){std::cerr<<e.what()<<'\n';result=1;}
     glfwDestroyWindow(window);glfwTerminate();return result;
 }

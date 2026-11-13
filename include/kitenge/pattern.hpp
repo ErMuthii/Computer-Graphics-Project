@@ -199,4 +199,38 @@ PatternSettings garmentPatternSettings(const PatternSettings& base);
 // the background stay with the studio shell.
 StudioHooks makePatternHooks(PatternSettingsProvider provider = {});
 
+// --- Scene options shared by studio_render and kitenge_studio ----------------
+//
+// Both programs accept the same options, so the desktop window and the
+// headless renderer can be run at identical state and settings and their
+// images compared pixel for pixel:
+//
+//   --motif N          starter motif index, 0..studioMotifCount-1
+//   --palette N        palette index, 0..studioPaletteCount-1
+//   --angle DEGREES    pattern rotation (converted to radians; clockwise on screen)
+//   --scale S          pattern scale, within [kMinPatternScale, kMaxPatternScale]
+//   --pitch X Y        tile pitch in pixels, each at least kMinTilePitch
+//   --translate X Y    pattern translation in pixels
+//   --reflect-x        mirror the motif left-right
+//   --reflect-y        mirror the motif top-bottom
+//
+// These are developer and verification options, not the final UI controls.
+struct PatternSceneOptions {
+    StudioState state;
+    PatternSettings settings = defaultStudioPatternSettings();
+};
+
+// If argv[index] is a scene option, applies it (consuming its values and
+// advancing `index` past them) and returns true. Returns false for any other
+// argument. Throws std::invalid_argument for a missing or invalid value.
+bool parsePatternSceneOption(int argc, const char* const* argv, int& index,
+                             PatternSceneOptions& options);
+
+// Usage text for the options above, one per line.
+const char* patternSceneOptionsUsage();
+
+// Degrees shown to the user <-> radians used by the maths.
+double degreesToRadians(double degrees);
+double radiansToDegrees(double radians);
+
 } // namespace kitenge
