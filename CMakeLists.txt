@@ -16,6 +16,10 @@ target_include_directories(kitenge_foundation PUBLIC ${CMAKE_CURRENT_SOURCE_DIR}
 target_compile_features(kitenge_foundation PUBLIC cxx_std_17)
 kitenge_warnings(kitenge_foundation)
 
+add_executable(polygon_fill_demo src/polygon_fill_demo.cpp)
+target_link_libraries(polygon_fill_demo PRIVATE kitenge_polygon_fill)
+kitenge_warnings(polygon_fill_demo)
+
 add_executable(kitenge_cp1 src/main.cpp)
 target_link_libraries(kitenge_cp1 PRIVATE kitenge_foundation)
 kitenge_warnings(kitenge_cp1)
