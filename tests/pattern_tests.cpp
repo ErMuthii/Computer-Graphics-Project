@@ -579,8 +579,10 @@ void testSceneOptions() {
 
     PatternSceneOptions other;
     require(!parses({"output.ppm"}, other), "Non-option arguments must be left to the caller");
+    // First index past the catalog, so the check follows the actual motif count.
+    const std::string pastLastMotif = std::to_string(studioMotifCount);
     for (const std::vector<const char*>& bad :
-         std::vector<std::vector<const char*>>{{"--motif", "3"}, {"--motif", "1.5"}, {"--palette", "-1"},
+         std::vector<std::vector<const char*>>{{"--motif", pastLastMotif.c_str()}, {"--motif", "1.5"}, {"--palette", "-1"},
                                                {"--angle", "abc"}, {"--angle", "inf"}, {"--scale", "0.05"},
                                                {"--scale", "25"}, {"--pitch", "6", "40"}, {"--pitch", "40"},
                                                {"--translate", "1"}, {"--motif"}, {"--scale", "2x"}}) {

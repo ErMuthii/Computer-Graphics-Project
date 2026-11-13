@@ -1,12 +1,15 @@
 #pragma once
 #include "kitenge/canvas.hpp"
+#include "kitenge/motifs.hpp"
 #include <functional>
 
 namespace kitenge {
 constexpr int studioWidth = 1200;
 constexpr int studioHeight = 760;
-constexpr int studioMotifCount = 3;
-constexpr int studioPaletteCount = 3;
+// Selection sizes come from Deborah's motif/palette catalog (motifs.hpp).
+constexpr int studioMotifCount = kMotifCount;
+constexpr int studioPaletteCount = kPaletteCount;
+// `secondary` holds the catalog's accent role.
 struct StudioPalette { Color background, primary, secondary; };
 // Throws std::out_of_range for an index outside [0, studioPaletteCount).
 StudioPalette studioPalette(int index);

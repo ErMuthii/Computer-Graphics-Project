@@ -528,8 +528,7 @@ MotifShape starterMotifShape(int index) {
 }
 
 std::vector<Color> patternPaletteFor(int studioPaletteIndex) {
-    const StudioPalette p = studioPalette(studioPaletteIndex);
-    return {p.background, p.primary, p.secondary};
+    return paletteRoleColors(studioPaletteIndex);
 }
 
 PatternSettings defaultStudioPatternSettings() {
@@ -560,13 +559,13 @@ StudioHooks makePatternHooks(PatternSettingsProvider provider) {
     hooks.fabric = [settingsFor](Canvas& canvas, const StudioState& state) {
         PatternSettings s = settingsFor(state);
         s.origin = kFabricPatternOrigin;
-        renderPattern(canvas, starterMotifShape(state.motif), patternPaletteFor(state.palette), s,
+        renderPattern(canvas, catalogMotif(state.motif), patternPaletteFor(state.palette), s,
                       studioFabricArea());
     };
     hooks.garment = [settingsFor](Canvas& canvas, const StudioState& state) {
         // One settings value for both panels keeps the repeat continuous at the waist.
         const PatternSettings s = garmentPatternSettings(settingsFor(state));
-        const MotifShape motif = starterMotifShape(state.motif);
+        const MotifShape& motif = catalogMotif(state.motif);
         const std::vector<Color> palette = patternPaletteFor(state.palette);
         renderPattern(canvas, motif, palette, s, studioBodice());
         renderPattern(canvas, motif, palette, s, studioSkirt());
