@@ -65,3 +65,19 @@ if requested by the lecturer.
 - Project component: Kitenge motifs cropped to a rectangular fabric window and
   to a trapezoid skirt panel. Outlines use a temporary preview helper until the
   lines and polygon fill modules are integrated.
+
+### 2D transformations before and after (`transforms.png`)
+
+- Author: Waruhiu Jeremy Kang'ethe, 166263.
+- Algorithms: 3 x 3 homogeneous matrices for translation, rotation about a
+  pivot, non-uniform scaling and x/y reflection, composed in the shared order
+  `T(translation) * T(pivot) * R * F * S * T(-pivot)`. Drawn with the CP1
+  scanline filler and Bresenham lines.
+- Source commit: `77b3738` on `feat/cp2-transforms`.
+- Command: `transforms_demo outputs/transforms.ppm`, converted to PNG for viewing.
+- Project component: an asymmetric "F" motif with a zigzag stroke, shown
+  untransformed and then translated, rotated +30 degrees (clockwise on screen),
+  scaled 1.6 x 0.6, reflected in x and in y, with all transforms combined, and
+  with the same two factors multiplied in both orders. Each panel shows the
+  original as a ghost, the pivot and the images of the local axes. See
+  [transformations.md](../algorithms/transformations.md).

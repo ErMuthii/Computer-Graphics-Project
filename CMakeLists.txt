@@ -56,6 +56,18 @@ add_library(kitenge_polygon_fill src/polygon_fill.cpp)
 target_link_libraries(kitenge_polygon_fill PUBLIC kitenge_foundation)
 kitenge_warnings(kitenge_polygon_fill)
 
+# 2D homogeneous transformation maths. Depends only on kitenge/types.hpp, so it
+# deliberately does not link kitenge_foundation (no Canvas or PPM in the maths).
+add_library(kitenge_transforms src/transforms.cpp)
+target_include_directories(kitenge_transforms PUBLIC ${CMAKE_CURRENT_SOURCE_DIR}/include)
+target_compile_features(kitenge_transforms PUBLIC cxx_std_17)
+kitenge_warnings(kitenge_transforms)
+
+add_executable(transforms_demo src/transforms_demo.cpp)
+target_link_libraries(transforms_demo PRIVATE kitenge_transforms kitenge_lines
+    kitenge_polygon_fill)
+kitenge_warnings(transforms_demo)
+
 # Pure C++ scene and state remain usable without a window or OpenGL dependency.
 add_library(kitenge_studio_core src/studio.cpp)
 target_link_libraries(kitenge_studio_core PUBLIC kitenge_polygon_fill
@@ -99,6 +111,11 @@ if(BUILD_TESTING)
     target_link_libraries(polygon_clip_tests PRIVATE kitenge_polygon_clip)
     kitenge_warnings(polygon_clip_tests)
     add_test(NAME polygon_clip COMMAND polygon_clip_tests)
+
+    add_executable(transform_tests tests/transform_tests.cpp)
+    target_link_libraries(transform_tests PRIVATE kitenge_transforms)
+    kitenge_warnings(transform_tests)
+    add_test(NAME transforms COMMAND transform_tests)
 
     add_executable(line_tests tests/line_tests.cpp)
     target_link_libraries(line_tests PRIVATE kitenge_lines)
