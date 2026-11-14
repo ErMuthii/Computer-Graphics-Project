@@ -24,6 +24,7 @@
 // structures (or become aliases of them) without changing the algorithm.
 
 #include "kitenge/canvas.hpp"
+#include "kitenge/motifs.hpp"
 #include "kitenge/studio.hpp"
 #include "kitenge/types.hpp"
 
@@ -51,25 +52,11 @@ struct PatternTransform {
     bool reflectY = false;
 };
 
-// Motif data in local coordinates centred on (0,0), nominally within
-// [-25, 25] on both axes. Filled contours must be simple polygons without
-// holes; they may be concave. Strokes are polylines (curves are sampled to
-// polylines before they reach the engine). `role` indexes the palette.
-struct MotifFill {
-    Polygon contour;
-    int role = 1;
-};
-
-struct MotifStroke {
-    std::vector<Point2D> points;
-    bool closed = false;
-    int role = 2;
-};
-
-struct MotifShape {
-    std::vector<MotifFill> fills;     // drawn in order
-    std::vector<MotifStroke> strokes; // drawn after the fills of the same tile
-};
+// Motif data (MotifShape, MotifFill, MotifStroke) now comes from the shared
+// catalog in motifs.hpp: local coordinates centred on (0,0) within [-25, 25],
+// simple (possibly concave) filled contours without holes, sampled polyline
+// strokes, and a palette role per fill/stroke. The field names are unchanged
+// from the interim structures this engine was written against.
 
 struct PatternSettings {
     PatternTransform transform;
@@ -170,8 +157,9 @@ void renderPattern(Canvas& canvas, const MotifShape& motif, const std::vector<Co
 
 // --- Studio integration ----------------------------------------------------
 
-// The three starter motifs (diamond, triangle, cross) as local motif data, so
-// the engine reproduces the starter look until Deborah's motif module lands.
+// The three plain starter motifs (diamond, triangle, cross) as local motif
+// data. The studio now draws the catalog motifs (catalogMotif in motifs.hpp);
+// these remain as fixed fixtures for the engine's own tests and demo.
 // Throws std::out_of_range for an unknown index.
 MotifShape starterMotifShape(int index);
 

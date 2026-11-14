@@ -68,10 +68,29 @@ target_link_libraries(transforms_demo PRIVATE kitenge_transforms kitenge_lines
     kitenge_polygon_fill)
 kitenge_warnings(transforms_demo)
 
+# Motif and palette catalog (local motif geometry, palette roles, labels).
+# Links curves for the sampled Bezier petals and polygon_fill for validation.
+add_library(kitenge_motifs src/motifs.cpp)
+target_link_libraries(kitenge_motifs PUBLIC kitenge_curves kitenge_polygon_fill)
+kitenge_warnings(kitenge_motifs)
+
+# Static mannequin and its two convex dress panels: the one shared geometry
+# source for the studio outlines and the garment clipping boundaries.
+add_library(kitenge_mannequin src/mannequin.cpp)
+target_link_libraries(kitenge_mannequin PUBLIC kitenge_polygon_fill
+    kitenge_lines kitenge_circles)
+kitenge_warnings(kitenge_mannequin)
+
+# Motif catalog and unpatterned mannequin rendered with the CP1 rasterizers.
+add_executable(motif_demo src/motif_demo.cpp)
+target_link_libraries(motif_demo PRIVATE kitenge_motifs kitenge_mannequin)
+kitenge_warnings(motif_demo)
+
 # Pure C++ scene and state remain usable without a window or OpenGL dependency.
 add_library(kitenge_studio_core src/studio.cpp)
 target_link_libraries(kitenge_studio_core PUBLIC kitenge_polygon_fill
-    kitenge_polygon_clip kitenge_lines kitenge_circles)
+    kitenge_polygon_clip kitenge_lines kitenge_circles kitenge_mannequin
+    kitenge_motifs)
 kitenge_warnings(kitenge_studio_core)
 # Reusable repeat-pattern renderer behind the fabric and garment hooks.
 add_library(kitenge_pattern src/pattern.cpp)
@@ -121,6 +140,14 @@ if(BUILD_TESTING)
     target_link_libraries(pattern_tests PRIVATE kitenge_pattern kitenge_curves)
     kitenge_warnings(pattern_tests)
     add_test(NAME pattern COMMAND pattern_tests)
+    add_executable(motif_tests tests/motif_tests.cpp)
+    target_link_libraries(motif_tests PRIVATE kitenge_pattern kitenge_transforms)
+    kitenge_warnings(motif_tests)
+    add_test(NAME motifs COMMAND motif_tests)
+    add_executable(mannequin_tests tests/mannequin_tests.cpp)
+    target_link_libraries(mannequin_tests PRIVATE kitenge_studio_core)
+    kitenge_warnings(mannequin_tests)
+    add_test(NAME mannequin COMMAND mannequin_tests)
     add_executable(animation_tests tests/animation_tests.cpp)
     target_link_libraries(animation_tests PRIVATE kitenge_animation)
     kitenge_warnings(animation_tests)

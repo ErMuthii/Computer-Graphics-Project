@@ -1,6 +1,6 @@
 #include "kitenge/studio.hpp"
-#include "kitenge/circles.hpp"
 #include "kitenge/lines.hpp"
+#include "kitenge/mannequin.hpp"
 #include "kitenge/polygon_fill.hpp"
 #include "kitenge/polygon_clip.hpp"
 #include <array>
@@ -12,11 +12,6 @@ namespace kitenge {
 namespace {
 constexpr Color paper{246,240,227}, ink{49,57,37}, brown{65,42,35};
 constexpr Color muted{111,105,89}, skin{187,156,121}, gold{238,174,46};
-constexpr std::array<StudioPalette,studioPaletteCount> palettes{{
-    {{242,221,175},{174,65,32},{48,81,57}},
-    {{228,231,216},{40,96,110},{190,113,43}},
-    {{234,214,207},{110,56,86},{55,76,77}}
-}};
 // Small built-in bitmap alphabet keeps both desktop and headless renders free
 // of font files, platform text APIs and runtime asset paths.
 const char* glyph(char c) {
@@ -68,64 +63,51 @@ void outline(Canvas& c,const Polygon& p,Color color) {
                    {static_cast<int>(std::lround(b.x)),static_cast<int>(std::lround(b.y))},color);
     }
 }
-Polygon motif(int kind,double x,double y) {
-    // Fixed starter shapes, not the team's future motif editor or matrix system.
-    if(kind==1) return {{x,y-22},{x+21,y+19},{x-21,y+19}};
-    if(kind==2) return {{x-22,y-10},{x-8,y-10},{x-8,y-23},{x+8,y-23},
-                        {x+8,y-10},{x+22,y-10},{x+22,y+10},{x+8,y+10},
-                        {x+8,y+23},{x-8,y+23},{x-8,y+10},{x-22,y+10}};
-    return {{x,y-25},{x+22,y},{x,y+25},{x-22,y}};
-}
 void starterPattern(Canvas& c,const StudioState& state,const Polygon& boundary,Rect bounds) {
-    const auto& p=palettes.at(static_cast<std::size_t>(state.palette));
+    // Fallback used only when no fabric/garment hook is registered. It places
+    // untransformed catalog fills (strokes are left to the pattern engine).
+    const Palette& p=catalogPalette(state.palette);
+    const MotifShape& m=catalogMotif(state.motif);
     fillPolygon(c,boundary,p.background);
     for(int y=static_cast<int>(bounds.minY)-25;y<bounds.maxY+50;y+=70)
         for(int x=static_cast<int>(bounds.minX)-22;x<bounds.maxX+44;x+=64) {
-            // Clipping uses the existing team's CP1 implementation.
-            auto clipped=clipPolygonToConvex(motif(state.motif,x,y),boundary);
-            fillPolygon(c,clipped,((x/64+y/70)%2==0)?p.primary:p.secondary);
+            const bool swap=(x/64+y/70)%2!=0; // alternate primary and accent
+            for(const MotifFill& f:m.fills) {
+                Polygon placed;
+                for(const Point2D& q:f.contour) placed.push_back({q.x+x,q.y+y});
+                int role=f.role;
+                if(swap&&role==kRolePrimary) role=kRoleAccent;
+                else if(swap&&role==kRoleAccent) role=kRolePrimary;
+                // Clipping uses the existing team's CP1 implementation.
+                fillPolygon(c,clipPolygonToConvex(placed,boundary),paletteRoleColor(p,role));
+            }
         }
 }
 void mannequin(Canvas& c,const StudioState& state,const StudioHooks& hooks) {
-    // Static scaffold: two convex dress panels make clipping explicit.
-    fillPolygon(c,{{937,241},{963,241},{963,278},{937,278}},skin);
-    fillPolygon(c,{{887,288},{900,302},{864,420},{847,412}},skin);
-    fillPolygon(c,{{1000,302},{1013,288},{1053,412},{1036,420}},skin);
-    fillPolygon(c,{{917,561},{943,561},{939,640},{920,640}},skin);
-    fillPolygon(c,{{957,561},{983,561},{980,640},{961,640}},skin);
-    for(int y=-34;y<=34;++y) {
-        const int half=static_cast<int>(29*std::sqrt(1.0-double(y*y)/(35*35)));
-        drawLine(c,{950-half,214+y},{950+half,214+y},skin);
-    }
-    drawEllipseMidpoint(c,{950,214},30,35,brown);
-    box(c,910,640,31,9,brown); box(c,960,640,31,9,brown);
-    const Polygon& bodice=studioBodice();
-    const Polygon& skirt=studioSkirt();
+    // The figure and both convex dress panels come from the shared mannequin
+    // module, so the outlines drawn here are the pattern's clipping boundaries.
+    drawMannequinFigure(c,skin,brown);
     if(hooks.garment) hooks.garment(c,state);
     else {
-        starterPattern(c,state,bodice,{897,278,1003,377});
-        starterPattern(c,state,skirt,{859,377,1041,574});
+        starterPattern(c,state,mannequinBodice(),polygonBounds(mannequinBodice()));
+        starterPattern(c,state,mannequinSkirt(),polygonBounds(mannequinSkirt()));
     }
-    outline(c,bodice,brown); outline(c,skirt,brown);
-    box(c,914,374,72,8,brown);
+    drawGarmentTrim(c,brown);
 }
 } // namespace
 StudioPalette studioPalette(int index) {
-    if(index<0||index>=studioPaletteCount) throw std::out_of_range("Unknown studio palette");
-    return palettes[static_cast<std::size_t>(index)];
+    // The palette data lives in the motif/palette catalog.
+    const Palette& p=catalogPalette(index); // throws std::out_of_range
+    return {p.background,p.primary,p.accent};
 }
 const Polygon& studioFabricArea() {
     static const Polygon area{{52,202},{696,202},{696,648},{52,648}};
     return area;
 }
-const Polygon& studioBodice() {
-    static const Polygon bodice{{897,278},{1003,278},{985,377},{915,377}};
-    return bodice;
-}
-const Polygon& studioSkirt() {
-    static const Polygon skirt{{915,377},{985,377},{1041,574},{859,574}};
-    return skirt;
-}
+// Forwarders kept so existing callers keep working; the geometry itself lives
+// once in the mannequin module.
+const Polygon& studioBodice() { return mannequinBodice(); }
+const Polygon& studioSkirt() { return mannequinSkirt(); }
 void applyAction(StudioState& s,StudioAction action) {
     switch(action) {
         case StudioAction::NextMotif: s.motif=(s.motif+1)%studioMotifCount; break;
@@ -159,9 +141,9 @@ void renderStudio(Canvas& c,const StudioState& s,const StudioHooks& hooks) {
     drawLine(c,{735,142},{735,661},{209,199,178});
     mannequin(c,s,hooks);
     text(c,"STATIC 2D MANNEQUIN",802,674,2,muted);
-    const char* names[]={"DIAMOND","TRIANGLE","CROSS"};
-    text(c,std::string("MOTIF: ")+names[s.motif],40,682,2,ink);
-    text(c,"PALETTE: "+std::to_string(s.palette+1),390,682,2,ink);
+    // Labels come from the catalog, so new motifs/palettes need no edits here.
+    text(c,std::string("MOTIF: ")+catalogMotifLabel(s.motif),40,682,2,ink);
+    text(c,"PALETTE: "+std::to_string(s.palette+1)+" "+catalogPaletteLabel(s.palette),390,682,2,ink);
     box(c,0,718,1200,42,brown);
     text(c,"M MOTIF   P PALETTE   R RESET   S EXPORT   ESC CLOSE",30,731,2,paper);
 }
