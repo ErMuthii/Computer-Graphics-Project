@@ -176,3 +176,30 @@ Both PPM files were converted to PNG for viewing without changing any pixels.
 - The SUNBURST motif in the INDIGO palette, rendered headlessly by the studio.
   The fabric preview and the dress use the same catalog motif, palette and
   role mapping (Kelvin's pattern engine places and clips the copies).
+## Checkpoint 2 evidence: pattern animation
+
+### Rotation and pulse frames (`animation-frames.png`)
+
+- Author: Sayialel Eric Lenina, 161492.
+- Algorithms: time-based evaluation from base settings,
+  `angle(t) = baseAngle + speed * t` and
+  `scale(t) = baseScale * (mid + amplitude * sin(2 pi f t))`, sampled at exact
+  frame times `t = frameIndex / fps`. The pattern is drawn by the pattern engine
+  with the shared matrix order. See [animation.md](../algorithms/animation.md).
+- Source: `feat/cp2-animation` (`src/animation.cpp`, `src/animation_demo.cpp`).
+- Commands, from a configured `build-core`:
+
+  ```sh
+  ./build-core/animation_demo --mode rotate
+  ./build-core/animation_demo --mode pulse --motif 2 --palette 1
+  ```
+
+  Frames 0, 15, 30 and 45 of each 60-frame, 30 fps sequence were scaled to a
+  third and placed side by side with Pillow.
+- Top row: the diamond motif rotating at 45 degrees per second (0, 22.5, 45 and
+  67.5 degrees). At 1 s each diamond has turned into an axis-aligned square.
+- Bottom row: the cross motif pulsing between 0.75x and 1.25x once every 2 s
+  (factor 1.0, 1.25, 1.0, 0.75).
+- In every frame the mannequin, dress outline and tile grid stay fixed, and the
+  fabric and dress show the same animated pattern. Motif and palette numbers are
+  the 0-based command-line indices. The on-screen footer counts palettes from 1.
