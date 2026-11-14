@@ -179,6 +179,7 @@ build on this machine may need the equivalent configuration option
 | Midpoint circle and ellipse drawing                           | Implemented on `feat/cp1-circles-ellipses`; see [circles-ellipses.md](docs/algorithms/circles-ellipses.md) |
 | Cubic Bézier evaluation and raster rendering                  | Implemented; see [bezier.md](docs/algorithms/bezier.md) and [evidence](docs/evidence/bezier-curves.png)    |
 | Integrated fabric swatch and simplified dress                 | Planned after module integration                                                                           |
+| Pattern animation (rotation and scale pulse) and frame export | Implemented on `feat/cp2-animation`; see [animation.md](docs/algorithms/animation.md); desktop playback planned for CP3 |
 
 The foundation diagnostic is a grid of RGB color blocks written pixel by pixel.
 It verifies the raster output path and does not claim to demonstrate the assigned
