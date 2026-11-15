@@ -58,6 +58,7 @@ the engine's interim copies, with the same field names.
 | 2 | CROSS | Concave 12-vertex cross, accent centre square | primary, accent |
 | 3 | STEPS | Concave staircase, accent square; asymmetric in x and y | primary, accent |
 | 4 | SUNBURST | Four Bezier petals, sampled disc, sampled ring stroke | accent, primary, accent stroke |
+| 5 | BEZIER ARCH | Cubic Bezier arch with scalloped feet, mirrored Bezier leaf, outline and vein strokes (Andrew, `curve_motif.cpp`; see `docs/controls.md`) | primary, accent, accent stroke, primary stroke |
 
 The outlines of DIAMOND, TRIANGLE and CROSS are the starter scene's shapes,
 moved out of `studio.cpp` into local coordinates. STEPS is deliberately

@@ -1,5 +1,6 @@
 #include "kitenge/motifs.hpp"
 
+#include "kitenge/curve_motif.hpp"
 #include "kitenge/curves.hpp"
 #include "kitenge/polygon_fill.hpp"
 
@@ -102,6 +103,8 @@ const std::array<CatalogEntry, kMotifCount>& motifCatalog() {
         {"CROSS", cross()},
         {"STEPS", steps()},
         {"SUNBURST", sunburst()},
+        // Andrew's cubic Bezier motif (curve_motif.cpp), sampled with the CP1 evaluator.
+        {kBezierArchLabel, bezierArchMotif()},
     }};
     return catalog;
 }

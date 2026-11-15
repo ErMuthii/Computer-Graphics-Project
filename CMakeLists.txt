@@ -70,8 +70,14 @@ kitenge_warnings(transforms_demo)
 
 # Motif and palette catalog (local motif geometry, palette roles, labels).
 # Links curves for the sampled Bezier petals and polygon_fill for validation.
+# Andrew's cubic Bezier arch motif, sampled with the CP1 evaluator and
+# registered in the catalog below.
+add_library(kitenge_curve_motif src/curve_motif.cpp)
+target_link_libraries(kitenge_curve_motif PUBLIC kitenge_curves)
+kitenge_warnings(kitenge_curve_motif)
+
 add_library(kitenge_motifs src/motifs.cpp)
-target_link_libraries(kitenge_motifs PUBLIC kitenge_curves kitenge_polygon_fill)
+target_link_libraries(kitenge_motifs PUBLIC kitenge_curves kitenge_curve_motif kitenge_polygon_fill)
 kitenge_warnings(kitenge_motifs)
 
 # Static mannequin and its two convex dress panels: the one shared geometry

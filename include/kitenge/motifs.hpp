@@ -67,7 +67,7 @@ bool isValidMotif(const MotifShape& motif);
 
 // Counts are compile-time constants so the studio can size its selection
 // controls from them instead of hardcoding "3".
-inline constexpr int kMotifCount = 5;
+inline constexpr int kMotifCount = 6;
 inline constexpr int kPaletteCount = 4;
 
 struct Palette {
