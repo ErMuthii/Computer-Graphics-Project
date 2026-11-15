@@ -1,4 +1,5 @@
 #include "kitenge/studio.hpp"
+#include "kitenge/controls.hpp"
 #include "kitenge/pattern.hpp"
 #include "kitenge/ppm.hpp"
 #include <exception>
@@ -21,10 +22,12 @@ int main(int argc,char** argv) {
             }
             path=arg;havePath=true;++i;
         }
-        const kitenge::PatternSettings settings=options.settings;
+        // Same control state, hooks and header readout as the desktop window,
+        // so a desktop capture and this image stay pixel-identical.
+        const kitenge::ControlState controls=kitenge::controlStateFrom(options);
         kitenge::Canvas canvas(kitenge::studioWidth,kitenge::studioHeight,{0,0,0});
-        kitenge::renderStudio(canvas,options.state,kitenge::makePatternHooks(
-            [settings](const kitenge::StudioState&){return settings;}));
+        kitenge::renderStudio(canvas,controls.studio,kitenge::makeControlledHooks(controls));
+        kitenge::drawControlStatus(canvas,controls);
         kitenge::writePpm(canvas,path);
         std::cout<<"Saved "<<path<<'\n';
     } catch(const std::exception& e) {std::cerr<<e.what()<<'\n';return 1;}

@@ -7,6 +7,8 @@
 #endif
 #include <GLFW/glfw3.h>
 #include "kitenge/studio.hpp"
+#include "kitenge/controls.hpp"
+#include "kitenge/desktop_keys.hpp"
 #include "kitenge/pattern.hpp"
 #include "kitenge/ppm.hpp"
 #include <algorithm>
@@ -19,27 +21,23 @@
 
 namespace {
 struct App {
-    kitenge::StudioState state;
-    // Fabric and garment interiors come from the reusable pattern engine.
-    kitenge::StudioHooks hooks=kitenge::makePatternHooks();
+    // Studio state, base pattern settings and animation settings in one place.
+    kitenge::ControlState controls;
+    // Fabric and garment read `controls` on every render (controls.hpp), so a
+    // key press reaches both views in the next frame.
+    kitenge::StudioHooks hooks=kitenge::makeControlledHooks(controls);
     bool dirty=true;
     bool exportRequested=false;
     std::filesystem::path exportPath="outputs/studio.ppm";
 };
 void key(GLFWwindow* w,int key,int,int action,int) {
-    if(action!=GLFW_PRESS) return;
+    // GLFW code -> ControlKey -> ControlAction -> reducer (desktop_keys.cpp).
+    // Held keys repeat only incremental adjustments, never toggles.
     auto& a=*static_cast<App*>(glfwGetWindowUserPointer(w));
-    using kitenge::StudioAction;
-    switch(key) {
-        case GLFW_KEY_ESCAPE: glfwSetWindowShouldClose(w,GLFW_TRUE); return;
-        case GLFW_KEY_M: kitenge::applyAction(a.state,StudioAction::NextMotif); break;
-        case GLFW_KEY_P: kitenge::applyAction(a.state,StudioAction::NextPalette); break;
-        case GLFW_KEY_R: kitenge::applyAction(a.state,StudioAction::Reset); break;
-        case GLFW_KEY_S: a.exportRequested=true; break;
-        // The animation owner connects Space/playback after supplying animate().
-        default: return;
-    }
-    a.dirty=true;
+    const kitenge::KeyEventResult r=kitenge::handleGlfwKey(a.controls,key,action);
+    if(r.effect==kitenge::ControlEffect::Close){glfwSetWindowShouldClose(w,GLFW_TRUE);return;}
+    if(r.effect==kitenge::ControlEffect::Export) a.exportRequested=true;
+    if(r.sceneChanged) a.dirty=true;
 }
 GLuint shader(GLenum kind,const char* source) {
     GLuint id=glCreateShader(kind);
@@ -164,9 +162,7 @@ int main(int argc,char** argv) {
         }
     } catch(const std::exception& e){std::cerr<<e.what()<<'\n';return 1;}
     // Same state and pattern settings that studio_render uses for these options.
-    app.state=options.state;
-    app.hooks=kitenge::makePatternHooks(
-        [settings=options.settings](const kitenge::StudioState&){return settings;});
+    app.controls=kitenge::controlStateFrom(options); // hooks already read app.controls
     const kitenge::StudioState initial=options.state;
     glfwSetErrorCallback([](int code,const char* message){std::cerr<<"GLFW "<<code<<": "<<message<<'\n';});
     if(!glfwInit()) return 1;
@@ -188,7 +184,8 @@ int main(int argc,char** argv) {
         while(glGetError()!=GL_NO_ERROR) {} // GLEW can set INVALID_ENUM on core contexts.
 #endif
         std::cout<<"OpenGL "<<glGetString(GL_VERSION)<<"\nRenderer: "<<glGetString(GL_RENDERER)
-                 <<"\nM motif / P palette / R reset / S export / Esc close\n"<<std::flush;
+                 <<"\nM/P motif/palette, arrows move, Q/E rotate, -/= scale, X/Y mirror axis, [/] tile pitch,"
+                   "\nspace play/pause, A animation mode, ,/. speed, R reset, S export, Esc close\n"<<std::flush;
         Presenter presenter;
         kitenge::Canvas canvas(kitenge::studioWidth,kitenge::studioHeight,{0,0,0});
         kitenge::Canvas previousFrame=canvas;
@@ -197,24 +194,39 @@ int main(int argc,char** argv) {
             if(smoke&&frames==1) {
                 key(window,GLFW_KEY_M,0,GLFW_PRESS,0);
                 key(window,GLFW_KEY_P,0,GLFW_PRESS,0);
-                if(app.state.motif!=(initial.motif+1)%kitenge::studioMotifCount||
-                   app.state.palette!=(initial.palette+1)%kitenge::studioPaletteCount)
+                if(app.controls.studio.motif!=(initial.motif+1)%kitenge::studioMotifCount||
+                   app.controls.studio.palette!=(initial.palette+1)%kitenge::studioPaletteCount)
                     throw std::runtime_error("Selection callbacks failed");
+            }
+            if(smoke&&frames==2) {
+                const double angle=app.controls.pattern.transform.angleRadians;
+                const double pitch=app.controls.pattern.tilePitch.x;
+                key(window,GLFW_KEY_E,0,GLFW_PRESS,0);
+                key(window,GLFW_KEY_RIGHT_BRACKET,0,GLFW_PRESS,0);
+                key(window,GLFW_KEY_Y,0,GLFW_PRESS,0);
+                key(window,GLFW_KEY_Y,0,GLFW_REPEAT,0); // a held toggle must not fire again
+                if(!(app.controls.pattern.transform.angleRadians>angle)||
+                   !(app.controls.pattern.tilePitch.x>pitch)||!app.controls.pattern.transform.reflectX)
+                    throw std::runtime_error("Rotate, pitch or mirror callbacks failed");
             }
             if(smoke&&frames==3) {
                 key(window,GLFW_KEY_R,0,GLFW_PRESS,0);
-                if(app.state.motif!=0||app.state.palette!=0)
+                if(app.controls.studio.motif!=0||app.controls.studio.palette!=0||
+                   app.controls.pattern.transform.angleRadians!=0||app.controls.pattern.transform.reflectX)
                     throw std::runtime_error("Reset callback failed");
                 glfwSetWindowSize(window,960,700);
             }
             glfwPollEvents();double now=glfwGetTime();
-            kitenge::advanceStudio(app.state,std::min(now-previous,0.1),app.hooks);previous=now;
-            if(app.dirty||app.state.playing) {
-                kitenge::renderStudio(canvas,app.state,app.hooks);presenter.upload(canvas);app.dirty=false;
-                // The frame after the M and P presses must already show the new
-                // motif and palette in the fabric preview and on both panels.
+            kitenge::advanceStudio(app.controls.studio,std::min(now-previous,0.1),app.hooks);previous=now;
+            if(app.dirty||app.controls.studio.playing) {
+                if(smoke) previousFrame=canvas;
+                kitenge::renderStudio(canvas,app.controls.studio,app.hooks);
+                kitenge::drawControlStatus(canvas,app.controls); // header readout only
+                presenter.upload(canvas);app.dirty=false;
+                // The frame after a key press must already show the change in the
+                // fabric preview and on both dress panels.
                 if(smoke&&frames==1) requireViewsUpdated(previousFrame,canvas,"Motif and palette keys");
-                if(smoke&&frames==0) previousFrame=canvas;
+                if(smoke&&frames==2) requireViewsUpdated(previousFrame,canvas,"Rotate, pitch and mirror keys");
             }
             if(app.exportRequested) {
                 try {kitenge::writePpm(canvas,app.exportPath);std::cout<<"Exported "<<app.exportPath<<'\n';}
@@ -233,8 +245,8 @@ int main(int argc,char** argv) {
             } else glfwWaitEventsTimeout(0.1);
             if(smoke&&frames>=6) break;
         }
-        if(smoke) std::cout<<"Desktop smoke test passed: shaders, upload, selection/reset callbacks, "
-                            "pattern views updated in the next frame, resize and presentation.\n";
+        if(smoke) std::cout<<"Desktop smoke test passed: shaders, upload, selection, transform and reset callbacks, "
+                            "held-toggle filtering, pattern views updated in the next frame, resize and presentation.\n";
     } catch(const std::exception& e){std::cerr<<e.what()<<'\n';result=1;}
     glfwDestroyWindow(window);glfwTerminate();return result;
 }
