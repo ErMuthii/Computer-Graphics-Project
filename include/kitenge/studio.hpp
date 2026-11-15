@@ -2,6 +2,7 @@
 #include "kitenge/canvas.hpp"
 #include "kitenge/motifs.hpp"
 #include <functional>
+#include <string>
 
 namespace kitenge {
 constexpr int studioWidth = 1200;
@@ -32,6 +33,12 @@ struct StudioHooks {
     std::function<void(Canvas&, const StudioState&)> garment;
     std::function<void(StudioState&, double)> animate;
 };
+// Draws upper-case text with the built-in 5x7 bitmap font at `scale` pixels per
+// font pixel. Characters the font lacks are drawn blank; check them with
+// studioFontSupports. Used by the scene and by the controls readout.
+void drawStudioText(Canvas&, const std::string& text, int x, int y, int scale, Color);
+// True for A-Z, 0-9, space and - : / + . , [ ] =
+bool studioFontSupports(char c);
 void applyAction(StudioState&, StudioAction);
 void advanceStudio(StudioState&, double deltaSeconds, const StudioHooks& = {});
 void renderStudio(Canvas&, const StudioState&, const StudioHooks& = {});

@@ -43,6 +43,11 @@ const char* glyph(char c) {
     if(c == ':') return "00000001000010000000001000010000000";
     if(c == '/') return "00001000100001000100010000100010000";
     if(c == '+') return "00000001000010011111001000010000000";
+    if(c == '.') return "00000000000000000000000000110001100";
+    if(c == ',') return "00000000000000000000011000010001000";
+    if(c == '[') return "01110010000100001000010000100001110";
+    if(c == ']') return "01110000100001000010000100001001110";
+    if(c == '=') return "00000000001111100000111110000000000";
     return "00000000000000000000000000000000000";
 }
 void box(Canvas& c, int x, int y, int w, int h, Color color) {
@@ -95,6 +100,13 @@ void mannequin(Canvas& c,const StudioState& state,const StudioHooks& hooks) {
     drawGarmentTrim(c,brown);
 }
 } // namespace
+void drawStudioText(Canvas& canvas,const std::string& s,int x,int y,int scale,Color color) {
+    text(canvas,s,x,y,scale,color);
+}
+bool studioFontSupports(char c) {
+    if(c==' '||(c>='A'&&c<='Z')||(c>='0'&&c<='9')) return true;
+    return std::string("-:/+.,[]=").find(c)!=std::string::npos;
+}
 StudioPalette studioPalette(int index) {
     // The palette data lives in the motif/palette catalog.
     const Palette& p=catalogPalette(index); // throws std::out_of_range
@@ -145,6 +157,8 @@ void renderStudio(Canvas& c,const StudioState& s,const StudioHooks& hooks) {
     text(c,std::string("MOTIF: ")+catalogMotifLabel(s.motif),40,682,2,ink);
     text(c,"PALETTE: "+std::to_string(s.palette+1)+" "+catalogPaletteLabel(s.palette),390,682,2,ink);
     box(c,0,718,1200,42,brown);
-    text(c,"M MOTIF   P PALETTE   R RESET   S EXPORT   ESC CLOSE",30,731,2,paper);
+    // Two-line control legend (keys handled by controls.cpp / desktop_keys.cpp).
+    text(c,"M/P MOTIF/PALETTE   ARROWS MOVE   Q/E ROTATE   -/= SCALE   X/Y MIRROR AXIS",30,722,2,paper);
+    text(c,"[/] TILE PITCH   SPACE PLAY/PAUSE   A MODE   ,/. SPEED   R RESET   S EXPORT   ESC CLOSE",30,741,2,paper);
 }
 } // namespace kitenge
