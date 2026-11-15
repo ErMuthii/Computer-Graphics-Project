@@ -203,3 +203,45 @@ Both PPM files were converted to PNG for viewing without changing any pixels.
 - In every frame the mannequin, dress outline and tile grid stay fixed, and the
   fabric and dress show the same animated pattern. Motif and palette numbers are
   the 0-based command-line indices. The on-screen footer counts palettes from 1.
+
+## Checkpoint 2 evidence: controls and the Bézier arch motif
+
+### Bézier arch construction (`curve-motif.png`)
+
+- Author: Andrew Karanja Gathirwa, 167144.
+- Algorithms: cubic Bézier control points (left), the same cubics drawn by the
+  CP1 de Casteljau rasterizer `drawCubicBezier` (middle), and the sampled
+  catalog motif repeated, transformed and clipped to a convex skirt panel by
+  Kelvin's pattern engine (right). See [controls.md](../controls.md).
+- Source: `feat/cp2-controls-curves` (`src/curve_motif.cpp`,
+  `src/curve_motif_demo.cpp`).
+- Command, from a configured `build-core`:
+
+  ```sh
+  ./build-core/curve_motif_demo outputs/curve-motif.ppm "Q==X]"
+  ```
+
+  The key script (Q, =, =, X, ]) runs through the real key map and reducer:
+  rotate −15°, scale 1.50, mirror across the x-axis, pitch 72 × 78.
+
+### Real keyboard session (`controls-interaction.png`, `controls-readout.png`)
+
+- Author: Andrew Karanja Gathirwa, 167144.
+- What it shows: the real `kitenge_studio` window driven by genuine X11 key
+  events (`xdotool`), including held keys using the OS auto-repeat. Each frame
+  was saved by the application's own S export, so it shows exactly what the
+  window displayed. `controls-interaction.png` holds six of the 13 frames at
+  half size. `controls-readout.png` shows the header readout after every step.
+- Results: holding → moved the pattern by 15–16 repeat steps; holding Y toggled
+  the mirror once; fabric and dress changed together on every step; A + Space
+  played the rotation; Space paused; R restored every value; Esc closed the
+  window.
+- Environment: Linux, Xvfb, Mesa llvmpipe OpenGL 4.5 core profile.
+- Command, after a desktop build:
+
+  ```sh
+  tests/real_key_session.sh build-desktop/kitenge_studio outputs/real-keys
+  ```
+
+  The two PNGs were assembled from `outputs/real-keys/step*.ppm` with Pillow
+  (frames scaled to half size; readout cropped from x = 690, y = 0 to 110).
