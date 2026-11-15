@@ -100,7 +100,7 @@ target_link_libraries(kitenge_studio_core PUBLIC kitenge_polygon_fill
 kitenge_warnings(kitenge_studio_core)
 # Reusable repeat-pattern renderer behind the fabric and garment hooks.
 add_library(kitenge_pattern src/pattern.cpp)
-target_link_libraries(kitenge_pattern PUBLIC kitenge_studio_core)
+target_link_libraries(kitenge_pattern PUBLIC kitenge_studio_core kitenge_transforms)
 kitenge_warnings(kitenge_pattern)
 add_executable(pattern_demo src/pattern_demo.cpp)
 target_link_libraries(pattern_demo PRIVATE kitenge_pattern kitenge_curves)
@@ -150,6 +150,10 @@ endif()
 
 include(CTest)
 if(BUILD_TESTING)
+    add_test(NAME ppm_compare_scaling COMMAND ${CMAKE_COMMAND}
+        -DCOMPARE=$<TARGET_FILE:ppm_compare>
+        -DOUT=${CMAKE_CURRENT_BINARY_DIR}/test-output/compare
+        -P ${CMAKE_CURRENT_SOURCE_DIR}/tests/ppm_compare_tests.cmake)
     add_executable(control_tests tests/control_tests.cpp)
     target_link_libraries(control_tests PRIVATE kitenge_controls kitenge_curve_motif)
     kitenge_warnings(control_tests)
@@ -242,6 +246,7 @@ if(BUILD_TESTING)
             set_tests_properties(desktop_matches_headless_${scene_name} PROPERTIES RUN_SERIAL TRUE)
         endforeach()
         add_test(NAME desktop_smoke COMMAND kitenge_studio --smoke-test
+            --export ${CMAKE_CURRENT_BINARY_DIR}/test-output/desktop/smoke-export.ppm
             --capture ${CMAKE_CURRENT_BINARY_DIR}/test-output/desktop/smoke.ppm)
         set_tests_properties(desktop_smoke PROPERTIES RUN_SERIAL TRUE)
     endif()

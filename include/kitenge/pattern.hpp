@@ -16,17 +16,15 @@
 // All geometry stays in doubles; values are rounded only when rasterizing.
 // Nothing here depends on GLFW or OpenGL.
 //
-// INTEGRATION NOTE. The shared contracts in docs/team/README.md give Jeremy the
-// matrix/transform-parameter type and Deborah the motif and palette data. Those
-// modules were not on main when this engine was written, so `PatternTransform`
-// and `MotifShape` below are interim inputs that follow the agreed contract
-// field for field. When the shared types merge, they replace these two
-// structures (or become aliases of them) without changing the algorithm.
+// Integration: PatternTransform aliases Jeremy's TransformParams, and the
+// renderer uses his Mat3 operations. MotifShape and palettes come from Deborah's
+// catalog. Andrew's controls and Lenina's animation feed these shared inputs.
 
 #include "kitenge/canvas.hpp"
 #include "kitenge/motifs.hpp"
 #include "kitenge/studio.hpp"
 #include "kitenge/types.hpp"
+#include "kitenge/transforms.hpp"
 
 #include <cstddef>
 #include <functional>
@@ -43,14 +41,7 @@ namespace kitenge {
 // `pivot` is in motif-local coordinates. `reflectX` mirrors x (x -> -x, a
 // left-right flip about the pivot); `reflectY` mirrors y (an up-down flip).
 // `translation` moves the pattern's origin; it never moves the destination.
-struct PatternTransform {
-    Point2D translation{0.0, 0.0};
-    double angleRadians = 0.0;
-    double scale = 1.0;
-    Point2D pivot{0.0, 0.0};
-    bool reflectX = false;
-    bool reflectY = false;
-};
+using PatternTransform = TransformParams;
 
 // Motif data (MotifShape, MotifFill, MotifStroke) now comes from the shared
 // catalog in motifs.hpp: local coordinates centred on (0,0) within [-25, 25],

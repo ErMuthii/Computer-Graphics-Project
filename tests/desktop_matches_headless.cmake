@@ -29,7 +29,7 @@ if(NOT render_result EQUAL 0)
     message(FATAL_ERROR "Headless render failed (${render_result}):\n${render_output}${render_error}")
 endif()
 
-execute_process(COMMAND "${COMPARE}" "${headless}" "${desktop}" "${diff}"
+execute_process(COMMAND "${COMPARE}" "${headless}" "${desktop}" "${diff}" --integer-scale
                 RESULT_VARIABLE compare_result OUTPUT_VARIABLE compare_output ERROR_VARIABLE compare_error)
 message(STATUS "${NAME}: ${compare_output}${compare_error}")
 if(NOT compare_result EQUAL 0)

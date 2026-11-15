@@ -217,6 +217,20 @@ int main(int argc,char** argv) {
                 glfwSetWindowSize(window,960,700);
             }
             glfwPollEvents();double now=glfwGetTime();
+            if(smoke&&frames==4) {
+                key(window,GLFW_KEY_A,0,GLFW_PRESS,0);
+                key(window,GLFW_KEY_SPACE,0,GLFW_PRESS,0);
+                if(!app.controls.studio.playing) throw std::runtime_error("Playback did not start");
+                kitenge::advanceStudio(app.controls.studio,0.25,app.hooks);
+            }
+            if(smoke&&frames==5) {
+                key(window,GLFW_KEY_SPACE,0,GLFW_PRESS,0);
+                const double frozen=app.controls.studio.timeSeconds;
+                kitenge::advanceStudio(app.controls.studio,0.25,app.hooks);
+                if(app.controls.studio.playing||app.controls.studio.timeSeconds!=frozen)
+                    throw std::runtime_error("Pause did not freeze the clock");
+                key(window,GLFW_KEY_S,0,GLFW_PRESS,0);
+            }
             kitenge::advanceStudio(app.controls.studio,std::min(now-previous,0.1),app.hooks);previous=now;
             if(app.dirty||app.controls.studio.playing) {
                 if(smoke) previousFrame=canvas;
@@ -227,10 +241,11 @@ int main(int argc,char** argv) {
                 // fabric preview and on both dress panels.
                 if(smoke&&frames==1) requireViewsUpdated(previousFrame,canvas,"Motif and palette keys");
                 if(smoke&&frames==2) requireViewsUpdated(previousFrame,canvas,"Rotate, pitch and mirror keys");
+                if(smoke&&frames==4) requireViewsUpdated(previousFrame,canvas,"Animation playback");
             }
             if(app.exportRequested) {
                 try {kitenge::writePpm(canvas,app.exportPath);std::cout<<"Exported "<<app.exportPath<<'\n';}
-                catch(const std::exception& e){std::cerr<<"Export failed: "<<e.what()<<'\n';}
+                catch(const std::exception& e){if(smoke) throw;std::cerr<<"Export failed: "<<e.what()<<'\n';}
                 app.exportRequested=false;
             }
             int w,h;glfwGetFramebufferSize(window,&w,&h);
@@ -246,7 +261,7 @@ int main(int argc,char** argv) {
             if(smoke&&frames>=6) break;
         }
         if(smoke) std::cout<<"Desktop smoke test passed: shaders, upload, selection, transform and reset callbacks, "
-                            "held-toggle filtering, pattern views updated in the next frame, resize and presentation.\n";
+                            "held-toggle filtering, animation, pause, export, view updates, resize and presentation.\n";
     } catch(const std::exception& e){std::cerr<<e.what()<<'\n';result=1;}
     glfwDestroyWindow(window);glfwTerminate();return result;
 }

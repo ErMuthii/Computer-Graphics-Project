@@ -62,9 +62,8 @@ Starting every tile from the untouched local motif means the transform is never
 applied twice to already-transformed geometry.
 
 `patternPoint(settings, column, row, p)` exposes exactly this mapping for tests.
-Internally a small 2×3 affine type composes the matrices once per render. When
-Jeremy's shared `Mat3` lands it replaces that private type; the order does not
-change.
+Internally Jeremy's shared `Mat3` composes the matrices once per render. The
+interim private affine implementation was removed during presentation integration.
 
 ## 2. Which tiles to draw: a conservative tile range
 
@@ -290,13 +289,9 @@ See `docs/evidence/README.md` for the images.
 
 ## Known limitations and integration notes
 
-- `PatternTransform` and `MotifShape` are interim inputs. The shared contracts
-  give the transform type to Jeremy and the motif and palette data to Deborah,
-  and neither was on `main` when this was written. Both structures follow the
-  contract field for field and should be replaced by, or aliased to, the shared
-  types when they merge. Eric coordinates that header change.
-- `starterMotifShape()` reproduces the three starter shapes as local data until
-  Deborah's motif module replaces it.
+- `PatternTransform` now aliases Jeremy's `TransformParams`; `MotifShape` and
+  palette data come from Deborah's catalog. `starterMotifShape()` delegates to
+  that catalog, including Andrew's Bezier arch variant.
 - Strokes are one pixel wide (CP1 Bresenham).
 - The desktop was checked with scripted key events and frame captures (see CP3
   below). Physical key presses still need a manual check in the running window.

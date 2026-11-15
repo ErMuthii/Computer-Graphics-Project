@@ -1,13 +1,14 @@
 # Kitenge Pattern Designer and Virtual Dress Preview
 
-## Desktop starter (new)
+## Integrated desktop prototype
 
 A separate OpenGL desktop target now displays a Pure C++ fabric preview and a
-static 2D mannequin. It supports motif/palette selection, reset, resize and PPM
-export. Existing CP1 demonstrations remain available.
+static 2D mannequin. It supports motif/palette selection, transformation controls,
+rotation and pulse animation, pause/reset, resize and PPM export. Existing CP1
+demonstrations remain available.
 
 See [desktop setup, controls and team integration contracts](docs/desktop-starter.md).
-Transformations and animation remain the team's next implementation work.
+See [controls](docs/controls.md) and the [presentation rehearsal and verification](docs/presentation-check.md).
 
 ## CP2 and CP3 team implementation guides
 
@@ -178,8 +179,9 @@ build on this machine may need the equivalent configuration option
 | Sutherland-Hodgman polygon clipping against convex boundaries | Implemented on `feat/cp1-polygon-clipping`; see [polygon-clipping.md](docs/algorithms/polygon-clipping.md) |
 | Midpoint circle and ellipse drawing                           | Implemented on `feat/cp1-circles-ellipses`; see [circles-ellipses.md](docs/algorithms/circles-ellipses.md) |
 | Cubic Bézier evaluation and raster rendering                  | Implemented; see [bezier.md](docs/algorithms/bezier.md) and [evidence](docs/evidence/bezier-curves.png)    |
-| Integrated fabric swatch and simplified dress                 | Planned after module integration                                                                           |
-| Pattern animation (rotation and scale pulse) and frame export | Implemented on `feat/cp2-animation`; see [animation.md](docs/algorithms/animation.md); desktop playback planned for CP3 |
+| Integrated fabric swatch and simplified dress                 | Implemented with shared transforms, motif catalog and clipping |
+| Pattern animation (rotation and scale pulse) and frame export | Implemented, including desktop playback; see [animation.md](docs/algorithms/animation.md) |
+| Keyboard transformation/playback controls and Bezier arch motif | Integrated; see [controls.md](docs/controls.md) |
 
 The foundation diagnostic is a grid of RGB color blocks written pixel by pixel.
 It verifies the raster output path and does not claim to demonstrate the assigned
@@ -202,16 +204,15 @@ workfile.md             Temporary CP1 collaboration plan
 
 - The CP1 demos remain static. The new optional desktop starter provides a live
   OpenGL window, fixed motif repetition, palette switching and a static 2D dress.
-- General motif editing, matrix transformations, animation, palette scoring and
-  camera input remain future work. Starter shapes and repetition are scaffolding.
+- General motif editing, palette scoring and camera input remain future work.
+  Matrix transformations, pattern animation and keyboard controls are integrated.
 - PPM display support depends on the viewer. A presentation copy may be converted
   to PNG without changing the pure C++ rendering implementation.
 - CP1 uses a simplified 2D dress; future previews show style and pattern placement,
   not verified garment measurements or physically simulated cloth.
-- The complete CP1 module build passes all six CTest checks using Apple Clang
+- The presentation build passes 19 CTest checks using Apple Clang
   and the documented macOS SDK selection. Earlier Windows 11 verification used
   g++ 15.2 (MSYS2 UCRT64) and CMake 4.4.4 on a polygon clipping branch;
   the current integrated build still needs Windows and Linux verification.
-- CMake verification used an isolated tool installation inside ignored `build/`
-  rather than a system installation. Teammates need CMake on their own PATH to
-  use the standard CMake commands, or can use the direct compiler route.
+- The presentation build uses Homebrew CMake and GLFW on Eric's Mac. Teammates
+  need the documented platform dependencies on their own machines.

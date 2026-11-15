@@ -62,24 +62,29 @@ Canvas readPpm(const std::string& path) {
 } // namespace
 
 int main(int argc, char** argv) {
-    if (argc < 3 || argc > 4) {
-        std::cerr << "Usage: ppm_compare expected.ppm actual.ppm [difference.ppm]\n";
+    const bool integerScale = argc == 5 && std::string(argv[4]) == "--integer-scale";
+    if (argc < 3 || argc > 5 || (argc == 5 && !integerScale)) {
+        std::cerr << "Usage: ppm_compare expected.ppm actual.ppm [difference.ppm] [--integer-scale]\n";
         return 2;
     }
     try {
         const Canvas expected = readPpm(argv[1]);
         const Canvas actual = readPpm(argv[2]);
-        if (expected.width() != actual.width() || expected.height() != actual.height()) {
+        const int scale = integerScale ? actual.width() / expected.width() : 1;
+        if (scale < 1 || actual.width() != expected.width() * scale ||
+            actual.height() != expected.height() * scale) {
             std::cout << "DIFFERENT: sizes " << expected.width() << "x" << expected.height() << " and "
                       << actual.width() << "x" << actual.height() << '\n';
             return 1;
         }
-        Canvas difference(expected.width(), expected.height(), {0, 0, 0});
+        Canvas difference(actual.width(), actual.height(), {0, 0, 0});
         long long differing = 0;
         int largest = 0;
-        for (int y = 0; y < expected.height(); ++y)
-            for (int x = 0; x < expected.width(); ++x) {
-                const Color e = expected.pixelAt(x, y);
+        for (int y = 0; y < actual.height(); ++y)
+            for (int x = 0; x < actual.width(); ++x) {
+                // Check EVERY framebuffer pixel against its logical source pixel.
+                // No averaging or tolerance may conceal a rendering error.
+                const Color e = expected.pixelAt(x / scale, y / scale);
                 const Color a = actual.pixelAt(x, y);
                 const int delta = std::max({std::abs(e.red - a.red), std::abs(e.green - a.green),
                                             std::abs(e.blue - a.blue)});
@@ -93,11 +98,11 @@ int main(int argc, char** argv) {
                                                static_cast<unsigned char>(e.blue / 3)});
                 }
             }
-        if (argc == 4) kitenge::writePpm(difference, argv[3]);
-        const long long total = static_cast<long long>(expected.width()) * expected.height();
+        if (argc >= 4) kitenge::writePpm(difference, argv[3]);
+        const long long total = static_cast<long long>(actual.width()) * actual.height();
         if (differing == 0) {
-            std::cout << "IDENTICAL: " << expected.width() << "x" << expected.height() << ", " << total
-                      << " pixels\n";
+            std::cout << "IDENTICAL: " << actual.width() << "x" << actual.height() << ", " << total
+                      << " pixels, exact integer display scale " << scale << '\n';
             return 0;
         }
         std::cout << "DIFFERENT: " << differing << " of " << total

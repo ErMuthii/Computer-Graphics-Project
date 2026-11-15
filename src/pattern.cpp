@@ -19,62 +19,20 @@ constexpr double kEpsilon = 1e-9;
 
 // --- Affine maths ------------------------------------------------------------
 //
-// A 2D affine map stored as the top two rows of a 3x3 matrix acting on column
-// vectors (x, y, 1):
-//     | a  b  tx |
-//     | c  d  ty |
-//     | 0  0  1  |
-// Kept private: it exists only to apply the agreed order until Jeremy's Mat3
-// module is shared.
-struct Affine {
-    double a = 1.0, b = 0.0, tx = 0.0;
-    double c = 0.0, d = 1.0, ty = 0.0;
-};
-
-Affine multiply(const Affine& left, const Affine& right) {
-    // left * right: `right` acts first.
-    Affine r;
-    r.a = left.a * right.a + left.b * right.c;
-    r.b = left.a * right.b + left.b * right.d;
-    r.tx = left.a * right.tx + left.b * right.ty + left.tx;
-    r.c = left.c * right.a + left.d * right.c;
-    r.d = left.c * right.b + left.d * right.d;
-    r.ty = left.c * right.tx + left.d * right.ty + left.ty;
-    return r;
-}
+// Jeremy's shared matrix implementation now drives the actual pattern renderer.
+using Affine = Mat3;
 
 Affine translation(Point2D offset) {
-    Affine m;
-    m.tx = offset.x;
-    m.ty = offset.y;
-    return m;
+    return translationMatrix(offset);
 }
 
 Point2D apply(const Affine& m, Point2D p) {
-    return {m.a * p.x + m.b * p.y + m.tx, m.c * p.x + m.d * p.y + m.ty};
+    return transformPoint(m, p);
 }
 
 // T(pivot) * R(angle) * F(reflection) * S(scale) * T(-pivot).
 Affine localTransform(const PatternTransform& t) {
-    Affine rotate;
-    rotate.a = std::cos(t.angleRadians);
-    rotate.b = -std::sin(t.angleRadians);
-    rotate.c = std::sin(t.angleRadians);
-    rotate.d = std::cos(t.angleRadians);
-
-    Affine reflect;
-    reflect.a = t.reflectX ? -1.0 : 1.0;
-    reflect.d = t.reflectY ? -1.0 : 1.0;
-
-    Affine scale;
-    scale.a = t.scale;
-    scale.d = t.scale;
-
-    Affine m = translation(t.pivot);
-    m = multiply(m, rotate);
-    m = multiply(m, reflect);
-    m = multiply(m, scale);
-    return multiply(m, translation({-t.pivot.x, -t.pivot.y}));
+    return pivotTransformMatrix(t);
 }
 
 // Origin of tile (column, row): origin + translation + tile offset.
