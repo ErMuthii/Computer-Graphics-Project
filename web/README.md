@@ -16,17 +16,30 @@ build with `npm run build -- --base=/your-path/`.
 
 ## Complete workflow
 
-1. Choose a preset or clear the motif. Draw strokes or drag out rectangles,
+1. Choose one of 18 editable motifs or clear the motif. The library includes
+   Diamond, Triangle, Cross, Steps, Sunburst and Bézier arch from the native
+   catalogue, plus Flower, Leaf, Star, Spiral, Chevron, Rosette, Rings, Fan,
+   Wave, Cowrie, Seed cluster and Hexagon. Draw strokes or drag out rectangles,
    ellipses, triangles and diamonds. Select a shape to move it, change its size,
    rotation, fill, stroke and palette role. Layers provide keyboard selection.
-2. Undo/redo, edit three colours, adjust pattern rotation, scale, spacing and
-   reflection. Play rotation or pulse animation. Export the cloth as PNG.
+2. Choose among 24 themes and 84 swatches, or enter custom hex colours. Each
+   design has a background, a primary and up to 30 accents (32 slots total).
+   Select a drawing colour, then draw or recolour a selected layer. Add accents;
+   removing one remaps its shapes to Primary and is undoable. Applying a theme
+   retains extra accents. Adjust rotation, scale, spacing and reflection, or
+   play/pause animation. Export the cloth as PNG.
 3. Save/open project JSON to keep editable geometry and settings. Project files
    deliberately exclude photos. Nothing is automatically uploaded or persisted.
 4. Orbit the generated 3D mannequin wearing the same design; export its view.
 5. Choose Photo fitting and a front-facing full-body image. MediaPipe's local
    model estimates shoulders/hips, then positions a new dress. Drag six handles
-   or use labelled percentage inputs for manual correction. Export without handles.
+   or use labelled percentage inputs for manual correction. Enlarge the fitting
+   view, choose Round/V/Boat neckline, tune neck depth and print size, and toggle
+   soft shading. Export without handles.
+6. Use **Protect photo** to brush original hands, hair or accessories in front
+   of the dress. **Restore dress** removes protected areas; **Undo brush** undoes
+   the last stroke and **Clear corrections** resets the mask. Original forearm
+   preservation is optional and off by default because it also retains sleeves.
 
 The photo stays in memory until reload/replacement. Supported formats are JPG,
 PNG and WebP up to 20 MB; long edges are downsampled to 1600px. Local bundled
@@ -35,17 +48,27 @@ requires a local server or website; opening index.html via file:// is unsupporte
 
 ## Graphics and architecture
 
+`src/catalog.js`: 18 editable vector motif factories, 24 themes and 84 swatches.
+Curved presets sample cubic Bézier segments or parametric curves locally.
+
 `src/core.js`: editable vector motif model, affine Canvas transforms, tiled cloth,
 hit testing, project validation and palette metrics. Harmony compares hue-pair
 distances with analogous/complementary/triadic templates. Readability normalizes
-three luminance contrast ratios (4.5 primary/background, 4.5 accent/background,
-3 primary/accent). The overall score weights both equally. These are disclosed
+all active colour pairs: 4.5 for foreground/background and 3 for foreground pairs.
+The lowest-contrast pairs are shown alongside a pair count. The overall score
+weights harmony and readability equally. These are disclosed
 design heuristics, not claims of objective beauty or WCAG compliance for fabric.
 
 `src/photo.js`: MediaPipe Pose Landmarker in IMAGE mode with a local model. It
 requires sufficiently visible shoulders and hips. On failure it reports that
-manual correction is needed. Six normalized anchors define two garment panels;
-four textured triangles map the cloth to the photo with affine transforms.
+manual correction is needed. Pose estimates the natural waist above the hips
+and the hem from visible knees/ankles or a torso-based fallback. Six normalized
+anchors define a dress silhouette with curved armholes and an adjustable
+neckline. A clipped CanvasPattern samples one exact fabric grid period with a
+uniform transform over the entire dress, avoiding the stretched motifs and
+waist discontinuities of the previous four-triangle mapping. Optional edge
+shading adds simple depth. A local alpha mask reveals original pixels using
+normalized correction strokes, with restore, undo and clear operations.
 Pose-guided forearm recompositing is optional. It is not pixel-perfect body
 segmentation, realistic cloth draping, body measurement or physical fitting.
 An uploaded image is a static photo, not a live-camera stream.
@@ -82,6 +105,9 @@ trip, PNG downloads, real pose inference on the official sample photograph,
 manual fit correction, WebGL initialization, invalid input and mobile overflow.
 They also exercise animation, 3D export, a photograph with no detected person,
 model download failure and a successful detection retry.
+New scenarios cover the motif/theme/swatch libraries, multiple-accent project
+round trips and deletion, fitting controls, brush undo, neckline cutouts,
+alpha-mask restore and consistent print spacing at the bust and skirt.
 Generated screenshots and test reports are ignored working files.
 
 ## Technical demonstration
@@ -98,8 +124,9 @@ Generated screenshots and test reports are ignored working files.
 5. Orbit the mannequin. Explain the lathed dress mesh, UV coordinates, shared
    CanvasTexture and lighting in `model.js`. A preset changes all views.
 6. Upload a clear, front-facing photograph, wait for detection, then correct the
-   six handles. Explain pose landmarks, normalized anchors and the four affine
-   triangle maps in `photo.js`. Try another image or manual reset if detection
+   six handles. Explain pose landmarks, normalized anchors, the curved dress
+   clipping path and uniform repeating texture in `photo.js`. Show neckline and
+   print-size controls, then the protect/restore brushes. Try another image or manual reset if detection
    cannot locate shoulders and hips.
 7. Export cloth, photo and 3D view. Save a project, clear the motif, then reopen
    the file to demonstrate that it preserves editable shapes and settings.

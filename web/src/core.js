@@ -1,8 +1,6 @@
-export const palettes = [
-  ["#f2ddb0", "#af4225", "#31553c"],
-  ["#eee8da", "#26677b", "#be7130"],
-  ["#f1deda", "#783b65", "#304b50"],
-];
+import { createMotif, paletteCatalog } from "./catalog.js";
+export const palettes = paletteCatalog.map((p) => p.colors);
+export const motif = createMotif;
 export function defaults() {
   return {
     version: 1,
@@ -18,74 +16,6 @@ export function defaults() {
     },
     shapes: motif("diamond"),
   };
-}
-export function motif(kind) {
-  const poly = (points, role) => ({
-    id: crypto.randomUUID(),
-    type: "polygon",
-    x: 200,
-    y: 200,
-    w: 150,
-    h: 150,
-    rotation: 0,
-    role,
-    stroke: 3,
-    filled: true,
-    points,
-  });
-  if (kind === "diamond")
-    return [
-      poly(
-        [
-          [0, -1],
-          [1, 0],
-          [0, 1],
-          [-1, 0],
-        ],
-        1,
-      ),
-      {
-        ...poly(
-          [
-            [0, -1],
-            [1, 0],
-            [0, 1],
-            [-1, 0],
-          ],
-          2,
-        ),
-        w: 58,
-        h: 58,
-      },
-    ];
-  if (kind === "flower")
-    return Array.from({ length: 4 }, (_, i) => ({
-      id: crypto.randomUUID(),
-      type: "ellipse",
-      x: 200 + Math.cos((i * Math.PI) / 2) * 48,
-      y: 200 + Math.sin((i * Math.PI) / 2) * 48,
-      w: 52,
-      h: 104,
-      rotation: i * 90 + 90,
-      role: (i % 2) + 1,
-      filled: true,
-      stroke: 2,
-    }));
-  return [
-    poly(
-      [
-        [-1, 1],
-        [-1, 0.4],
-        [-0.3, 0.4],
-        [-0.3, -0.3],
-        [0.4, -0.3],
-        [0.4, -1],
-        [1, -1],
-        [1, 1],
-      ],
-      1,
-    ),
-  ];
 }
 export function shapePath(s) {
   const p = new Path2D();
@@ -174,6 +104,16 @@ export function renderPattern(canvas, project, time = 0) {
       c.restore();
     }
 }
+// A single exact grid period avoids a seam when repeated across a photograph.
+export function renderRepeat(canvas, project, time = 0) {
+  const pitch = Math.round(project.settings.pitch);
+  if (canvas.width !== pitch) canvas.width = canvas.height = pitch;
+  renderPattern(
+    canvas,
+    { ...project, settings: { ...project.settings, pitch } },
+    time,
+  );
+}
 export function hitShape(s, x, y) {
   const a = (-s.rotation * Math.PI) / 180,
     dx = x - s.x,
@@ -236,16 +176,24 @@ export function paletteScore(p) {
     .sort((a, b) => a.error - b.error)[0];
   const harmony =
     hs.length < 2 ? 100 : Math.round(Math.max(0, 100 - best.error * 1.5));
-  const ratios = [
-    contrast(p[0], p[1]),
-    contrast(p[0], p[2]),
-    contrast(p[1], p[2]),
-  ];
+  const name = (i) =>
+    i === 0 ? "Background" : i === 1 ? "Primary" : `Accent ${i - 1}`;
+  const pairsWithContrast = [];
+  for (let i = 0; i < p.length; i++)
+    for (let j = i + 1; j < p.length; j++) {
+      pairsWithContrast.push({
+        label: `${name(j)} / ${name(i)}`,
+        ratio: contrast(p[i], p[j]),
+        target: i === 0 ? 4.5 : 3,
+      });
+    }
+  const ratios = pairsWithContrast.map((pair) => pair.ratio);
   const readability = Math.round(
-    ((Math.min(ratios[0] / 4.5, 1) +
-      Math.min(ratios[1] / 4.5, 1) +
-      Math.min(ratios[2] / 3, 1)) /
-      3) *
+    (pairsWithContrast.reduce(
+      (sum, pair) => sum + Math.min(pair.ratio / pair.target, 1),
+      0,
+    ) /
+      pairsWithContrast.length) *
       100,
   );
   return {
@@ -254,6 +202,7 @@ export function paletteScore(p) {
     total: Math.round(harmony * 0.5 + readability * 0.5),
     scheme: hs.length < 2 ? "Neutral" : best.name,
     ratios,
+    pairs: pairsWithContrast,
   };
 }
 export function validateProject(v) {
@@ -261,7 +210,8 @@ export function validateProject(v) {
     !v ||
     v.version !== 1 ||
     !Array.isArray(v.palette) ||
-    v.palette.length !== 3 ||
+    v.palette.length < 3 ||
+    v.palette.length > 32 ||
     !v.palette.every((c) => /^#[a-f\d]{6}$/i.test(c)) ||
     !Array.isArray(v.shapes) ||
     v.shapes.length > 300
@@ -300,7 +250,9 @@ export function validateProject(v) {
       Math.abs(o.rotation) > 3600 ||
       o.stroke < 1 ||
       o.stroke > 40 ||
-      ![0, 1, 2].includes(o.role) ||
+      !Number.isInteger(o.role) ||
+      o.role < 0 ||
+      o.role >= v.palette.length ||
       typeof o.filled !== "boolean"
     )
       throw Error("Invalid motif geometry.");
@@ -347,14 +299,25 @@ export function poseAnchors(l) {
       "The detected person is too small or tilted. Use another photo or manual correction.",
     );
   const hipY = (l[lh].y + l[rh].y) / 2,
+    shoulderY = (l[left].y + l[right].y) / 2,
+    shoulderMid = (l[left].x + l[right].x) / 2,
     mid = (l[lh].x + l[rh].x) / 2,
-    hemY = Math.min(0.97, hipY + torso * 1.4);
+    waistMid = shoulderMid * 0.36 + mid * 0.64,
+    waistY = shoulderY + torso * 0.64,
+    waistHalf = Math.max(Math.abs(l[rh].x - l[lh].x) * 0.47, width * 0.34);
+  const legsVisible = [25, 26, 27, 28].every(
+    (i) => l[i]?.visibility > 0.5 && Number.isFinite(l[i].y) && l[i].y > hipY,
+  );
+  const legHem = legsVisible
+    ? (l[25].y + l[26].y + l[27].y + l[28].y) / 4
+    : hipY + torso * 1.12;
+  const hemY = Math.min(0.97, Math.max(waistY + 0.1, legHem));
   return [
-    [l[left].x, l[left].y + 0.025],
-    [l[right].x, l[right].y + 0.025],
-    [l[rh].x, hipY],
-    [mid + width * 0.8, hemY],
-    [mid - width * 0.8, hemY],
-    [l[lh].x, hipY],
+    [l[left].x, l[left].y + torso * 0.02],
+    [l[right].x, l[right].y + torso * 0.02],
+    [waistMid + waistHalf, waistY],
+    [mid + width * 0.67, hemY],
+    [mid - width * 0.67, hemY],
+    [waistMid - waistHalf, waistY],
   ].map(([x, y]) => [Math.max(0, Math.min(1, x)), Math.max(0, Math.min(1, y))]);
 }

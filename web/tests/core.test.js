@@ -50,6 +50,10 @@ test("pose alignment uses visible shoulders and hips and bounds the hem", () => 
   const a = poseAnchors(l);
   assert.equal(a.length, 6);
   assert.ok(a[3][1] > 0.5 && a[3][1] <= 0.97);
+  assert.ok(
+    a[2][1] > 0.2 && a[2][1] < 0.5,
+    "natural waist lies above hip landmarks",
+  );
   l[11].visibility = 0.1;
   assert.throws(() => poseAnchors(l));
   assert.throws(() => poseAnchors([]));

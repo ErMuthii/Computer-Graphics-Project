@@ -8,6 +8,11 @@ and a new dress overlay on an uploaded person photograph. Automatic pose
 alignment is followed by manual correction. Project JSON and all three PNG
 views can be exported. Photos are processed locally.
 
+The browser catalogue includes 18 motifs, 24 colour themes and 84 swatches plus
+custom hex colours. Designs support one background, one primary and up to 30
+accents. Photo fitting has curved armholes, three neckline options, consistent
+print scale, optional shading, an enlarged view and protect/restore brushes.
+
 With Node 22.12 or newer:
 
 ```sh

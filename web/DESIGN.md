@@ -15,3 +15,9 @@ Show selected, disabled, loading, empty, success and error states. Automatic
 photo detection must visibly fall back to manual fitting. Display the palette
 score with its component scores and contrast ratios so it can be explained.
 Animation occurs in the fabric only when the user presses Play.
+
+Keep the expanded motif gallery and swatches scrollable. The desktop tool
+column scrolls independently so the artwork remains visible while editing
+colours. On mobile, colour slots use two columns to keep labels readable.
+The enlarged fitting view gives the photograph room beside its controls.
+Protect/restore brushes name exactly which original pixels they reveal.

@@ -10,6 +10,12 @@ person photograph with a new dress overlay, and a generated 3D mannequin wearing
 the dress. Photo fitting begins with automatic shoulder/hip detection and allows
 manual correction. Colour scoring explains hue harmony and luminance contrast.
 
+The expanded workflow supports 18 starting motifs, 24 colour themes and 84
+swatches plus custom hex colours. A design has one background, one primary and
+up to 30 accents. Photo fitting uses a shaped outline with consistent print
+scale and optional shading. Users can enlarge the view, tune the neckline, and
+protect/restore original photo pixels for hands, hair and accessories.
+
 Essential outputs are editable project JSON and PNG images of cloth, photo
 fitting and the 3D view. No account, remote photo processing or live camera is
 required. The six-member group needs readable implementation and reproducible

@@ -3,17 +3,21 @@
 Verified locally on macOS with Node 22.19.0 and installed Google Chrome.
 
 - `npm ci`: reproducible installation using the lockfile.
-- `npm test`: 5 passing tests covering contrast mathematics, scoring bounds,
+- `npm test`: 7 passing tests covering the complete motif catalogue, themes and
+  swatches, 32-colour project validation, contrast mathematics, scoring bounds,
   project validation, pose-to-garment anchors and rotated picking.
-- `PLAYWRIGHT_CHROME=1 npm run test:browser`: 4 passing browser scenarios.
+- `PLAYWRIGHT_CHROME=1 npm run test:browser`: 7 passing browser scenarios.
   These cover editable geometry/freehand, undo/redo, animation, palette display,
   save/open JSON, fabric/3D/photo PNG downloads, actual pose inference using the
   bundled model, manual correction, no-person fallback, missing-model recovery
-  and retry, malformed project handling and mobile overflow.
+  and retry, malformed project handling and mobile overflow, multiple-accent
+  round trips and removal/undo, enlarged fitting controls, brush undo,
+  neckline exposure, mask protection/restoration and uniform print spacing.
 - `npm run build`: production build passes.
 - `npm audit`: no reported vulnerabilities at verification time.
 - Existing `ctest --test-dir build-presentation --output-on-failure`: 19 passing
-  C++/OpenGL tests, including desktop/headless rendering comparisons.
+  C++/OpenGL tests at the initial browser integration, including desktop/headless
+  rendering comparisons. This refinement changes no C++ source.
 - Desktop, photo-fitting and 390px mobile screenshots inspected.
 
 Tests verify function and outputs, not photorealism or physical fitting.

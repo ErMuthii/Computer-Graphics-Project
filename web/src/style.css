@@ -137,6 +137,11 @@ main {
 .inspector {
   padding: 1.4rem;
   border-right: 1px solid var(--line);
+  position: sticky;
+  top: 1rem;
+  align-self: start;
+  max-height: calc(100vh - 9rem);
+  overflow-y: auto;
 }
 h1 {
   font-size: 1.35rem;
@@ -159,6 +164,40 @@ fieldset {
   border: 0;
   margin: 0;
   min-width: 0;
+}
+h3 {
+  font-size: 0.85rem;
+  margin: 1.3rem 0 0.4rem;
+}
+.motif-grid {
+  display: grid;
+  grid-template-columns: repeat(3, minmax(0, 1fr));
+  gap: 0.35rem;
+  max-height: 20rem;
+  overflow: auto;
+  padding: 3px;
+}
+.motif-grid button {
+  padding: 0.35rem 0.2rem;
+  min-width: 0;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 0.25rem;
+  font-size: 0.68rem;
+}
+.motif-grid canvas {
+  display: block;
+  width: 100%;
+  max-width: 56px;
+  height: auto;
+  aspect-ratio: 1;
+  border-radius: 3px;
+}
+.motif-grid span {
+  min-height: 2.6em;
+  display: grid;
+  place-items: center;
 }
 fieldset:disabled {
   opacity: 0.45;
@@ -220,8 +259,12 @@ output {
   margin-top: 0.6rem;
 }
 .palette {
-  display: flex;
-  gap: 0.8rem;
+  display: grid;
+  grid-template-columns: repeat(3, minmax(0, 1fr));
+  max-height: 18rem;
+  overflow: auto;
+  padding: 3px;
+  gap: 0.65rem 0.4rem;
   margin-bottom: 0.8rem;
 }
 .palette label {
@@ -235,6 +278,91 @@ output {
   padding: 3px;
   background: none;
   cursor: pointer;
+}
+.colour-slot {
+  min-width: 0;
+}
+.colour-slot input[type="text"] {
+  width: 100%;
+  height: auto;
+  padding: 0.3rem 0.1rem;
+  margin-top: 0.3rem;
+  font-size: 0.64rem;
+  text-align: center;
+  border-radius: 3px;
+  background: #fffdf7;
+  font-variant-numeric: tabular-nums;
+}
+.swatch-library {
+  margin: 1rem 0;
+}
+.swatch-library summary {
+  cursor: pointer;
+  font-size: 0.8rem;
+  font-weight: 600;
+  margin-bottom: 0.75rem;
+}
+.swatches {
+  display: grid;
+  grid-template-columns: repeat(7, minmax(0, 1fr));
+  gap: 0.3rem;
+  max-height: 12rem;
+  overflow: auto;
+  padding: 4px;
+}
+.swatches button {
+  height: 26px;
+  padding: 0;
+  border: 1px solid #0004;
+  border-radius: 3px;
+}
+.swatches button[aria-pressed="true"] {
+  outline: 2px solid var(--ink);
+  outline-offset: 2px;
+  border: 2px solid #fff;
+}
+.photo-stage {
+  min-width: 0;
+}
+.fitting-focus .workbench {
+  display: none;
+}
+.fitting-focus .preview {
+  grid-column: 2/-1;
+}
+.fitting-focus #photo-panel {
+  display: grid;
+  grid-template-columns: minmax(300px, 1fr) minmax(240px, 320px);
+  gap: 0.8rem 1.5rem;
+}
+.fitting-focus #photo-panel > * {
+  grid-column: 2;
+  min-width: 0;
+}
+.fitting-focus #photo-panel > h2,
+.fitting-focus #photo-panel > #enlarge-photo {
+  grid-column: 1/-1;
+}
+.fitting-focus #photo-panel > .photo-stage {
+  grid-column: 1;
+  grid-row: 3/14;
+  align-self: start;
+  position: sticky;
+  top: 1rem;
+}
+.fitting-focus #photo {
+  max-height: 82vh;
+  max-width: 100%;
+  width: auto;
+  margin: 0 auto;
+}
+@media (max-width: 1000px) {
+  .fitting-focus #photo-panel {
+    display: block;
+  }
+  .fitting-focus #photo-panel > .photo-stage {
+    position: static;
+  }
 }
 .score {
   display: flex;
@@ -472,6 +600,15 @@ footer {
     display: grid;
     grid-template-columns: 1fr 1fr;
     gap: 0 1rem;
+    position: static;
+    max-height: none;
+    overflow: visible;
+  }
+  .palette {
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+  }
+  .swatches {
+    grid-template-columns: repeat(5, minmax(0, 1fr));
   }
   .inspector > h1,
   .inspector > .subtle {
