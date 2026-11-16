@@ -22,6 +22,11 @@ build with `npm run build -- --base=/your-path/`.
    Wave, Cowrie, Seed cluster and Hexagon. Draw strokes or drag out rectangles,
    ellipses, triangles and diamonds. Select a shape to move it, change its size,
    rotation, fill, stroke and palette role. Layers provide keyboard selection.
+   After creating a geometric shape, Select / move activates automatically.
+   Drag its corner handles to resize both dimensions or its edge handles to
+   change one dimension. Hold Shift while dragging a corner to keep proportions.
+   Drag inside to move. The same handles work on rotated shapes and selected
+   freehand strokes. A complete drag is one undo/redo action.
 2. Choose among 24 themes and 84 swatches, or enter custom hex colours. Each
    design has a background, a primary and up to 30 accents (32 slots total).
    Select a drawing colour, then draw or recolour a selected layer. Add accents;
@@ -58,6 +63,12 @@ all active colour pairs: 4.5 for foreground/background and 3 for foreground pair
 The lowest-contrast pairs are shown alongside a pair count. The overall score
 weights harmony and readability equally. These are disclosed
 design heuristics, not claims of objective beauty or WCAG compliance for fabric.
+
+`src/selection.js`: eight resize handles, hit testing, directional cursors and
+anchor-preserving resize mathematics. Pointer positions are transformed into
+the selected shape's local axes; the opposite edge/corner remains fixed as
+dimensions change. Shift constrains the ratio, and freehand points scale from
+the original gesture snapshot. Numeric width/height fields stay synchronized.
 
 `src/photo.js`: MediaPipe Pose Landmarker in IMAGE mode with a local model. It
 requires sufficiently visible shoulders and hips. On failure it reports that
@@ -108,6 +119,8 @@ model download failure and a successful detection retry.
 New scenarios cover the motif/theme/swatch libraries, multiple-accent project
 round trips and deletion, fitting controls, brush undo, neckline cutouts,
 alpha-mask restore and consistent print spacing at the bust and skirt.
+Resize tests cover corners, edges, rotation, opposite-anchor stability, size
+limits, freehand scaling, aspect locking, mobile coordinates and undo/redo.
 Generated screenshots and test reports are ignored working files.
 
 ## Technical demonstration

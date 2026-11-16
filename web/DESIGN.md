@@ -21,3 +21,8 @@ column scrolls independently so the artwork remains visible while editing
 colours. On mobile, colour slots use two columns to keep labels readable.
 The enlarged fitting view gives the photograph room beside its controls.
 Protect/restore brushes name exactly which original pixels they reveal.
+
+Selected motif shapes show eight square resize handles. Corners resize both
+axes, edges resize one, and Shift locks corner proportions. Cursor directions
+follow rotation. During drawing, defer inspector layout changes until pointer-up
+to keep the canvas steady on narrow screens.

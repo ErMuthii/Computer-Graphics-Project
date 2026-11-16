@@ -12,6 +12,11 @@ import {
 } from "./core.js";
 import { createModel } from "./model.js";
 import {
+  hitResizeHandle,
+  resizeFromHandle,
+  resizeCursor,
+} from "./selection.js";
+import {
   detectPose,
   drawPhoto,
   manualAnchors,
@@ -179,7 +184,7 @@ function sync() {
   $("#delete").disabled = !s;
   $("#shape-fields").disabled = !s;
   $("#selection").textContent = s
-    ? `Editing ${s.type}. Drag on the canvas to reposition.`
+    ? `Editing ${s.type}. Drag handles to resize, or drag inside to move. Shift keeps corner proportions.`
     : "Select a shape to edit its geometry.";
   if (s) {
     $("#shape-w").value = Math.round(s.w);
@@ -238,7 +243,7 @@ function toolUI() {
     .forEach((b) => b.setAttribute("aria-pressed", b.dataset.tool === tool));
   $("#tool-hint").textContent =
     tool === "select"
-      ? "Select a shape and drag to move it."
+      ? "Drag a shape to move it. Drag its handles to resize; Shift keeps proportions."
       : tool === "brush"
         ? "Drag to draw a freehand stroke."
         : "Drag to size a new shape.";
@@ -257,7 +262,27 @@ editor.onpointerdown = (e) => {
   editor.setPointerCapture(e.pointerId);
   const [x, y] = point(e, editor),
     before = snapshot();
-  if (tool === "select") {
+  const current = project.shapes.find((s) => s.id === selected);
+  const handle =
+    tool === "select" &&
+    current &&
+    hitResizeHandle(
+      current,
+      x,
+      y,
+      Math.max(10, (10 * 400) / editor.getBoundingClientRect().width),
+    );
+  if (handle) {
+    tool = "select";
+    toolUI();
+    drag = {
+      kind: "resize",
+      handle,
+      original: structuredClone(current),
+      before,
+    };
+    editor.style.cursor = resizeCursor(handle, current.rotation);
+  } else if (tool === "select") {
     const s = [...project.shapes].reverse().find((s) => hitShape(s, x, y));
     selected = s?.id ?? null;
     if (s) role = s.role;
@@ -301,17 +326,44 @@ editor.onpointerdown = (e) => {
     selected = s.id;
     drag = { kind: tool === "brush" ? "brush" : "shape", x, y, before };
   }
-  sync();
+  // Adding a layer changes the mobile page height. Defer the inspector rebuild
+  // until pointer-up so the canvas cannot move underneath an active gesture.
+  if (!drag) sync();
   dirty = true;
 };
 editor.onpointermove = (e) => {
-  if (!drag) return;
+  if (!drag) {
+    const [x, y] = point(e, editor),
+      s = project.shapes.find((s) => s.id === selected);
+    const handle =
+      tool === "select" &&
+      s &&
+      hitResizeHandle(
+        s,
+        x,
+        y,
+        Math.max(10, (10 * 400) / editor.getBoundingClientRect().width),
+      );
+    editor.style.cursor = handle
+      ? resizeCursor(handle, s.rotation)
+      : tool === "select"
+        ? "move"
+        : "crosshair";
+    return;
+  }
   const [px, py] = point(e, editor),
     x = Math.max(0, Math.min(400, px)),
     y = Math.max(0, Math.min(400, py)),
     s = project.shapes.find((s) => s.id === selected);
   if (!s) return;
-  if (drag.kind === "move") {
+  if (drag.kind === "resize") {
+    Object.assign(
+      s,
+      resizeFromHandle(drag.original, drag.handle, x, y, e.shiftKey),
+    );
+    $("#shape-w").value = Math.round(s.w);
+    $("#shape-h").value = Math.round(s.h);
+  } else if (drag.kind === "move") {
     s.x = Math.max(0, Math.min(400, drag.sx + x - drag.x));
     s.y = Math.max(0, Math.min(400, drag.sy + y - drag.y));
   } else if (drag.kind === "brush") {
@@ -331,7 +383,7 @@ editor.onpointermove = (e) => {
 function endDraw() {
   if (!drag) return;
   const s = project.shapes.find((s) => s.id === selected);
-  if (s?.type === "path") {
+  if (s?.type === "path" && drag.kind === "brush") {
     if (s.points.length === 1) s.points.push([0.1, 0.1]);
     const minX = Math.min(...s.points.map((p) => p[0])),
       maxX = Math.max(...s.points.map((p) => p[0])),
@@ -344,6 +396,10 @@ function endDraw() {
     s.y += cy;
   }
   if (snapshot() !== drag.before) remember(drag.before);
+  if (drag.kind === "shape") {
+    tool = "select";
+    toolUI();
+  }
   drag = null;
   sync();
   dirty = true;
@@ -845,7 +901,7 @@ function tick(now) {
     dirty = true;
   }
   if (dirty) {
-    paintMotif(editor, project, true, selected);
+    paintMotif(editor, project, true, tool === "select" ? selected : null);
     renderPattern(pattern, project, time);
     model?.update();
     if (photo) paintPhoto();

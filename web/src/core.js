@@ -1,4 +1,5 @@
 import { createMotif, paletteCatalog } from "./catalog.js";
+import { resizeHandles } from "./selection.js";
 export const palettes = paletteCatalog.map((p) => p.colors);
 export const motif = createMotif;
 export function defaults() {
@@ -72,9 +73,20 @@ export function paintMotif(canvas, project, editor = false, selected = null) {
       c.save();
       c.translate(s.x, s.y);
       c.rotate((s.rotation * Math.PI) / 180);
-      c.strokeStyle = "#172fbd";
+      c.strokeStyle = "#155dcc";
+      c.lineWidth = 1.5;
       c.setLineDash([5, 4]);
-      c.strokeRect(-s.w / 2 - 6, -s.h / 2 - 6, s.w + 12, s.h + 12);
+      c.strokeRect(-s.w / 2, -s.h / 2, s.w, s.h);
+      c.restore();
+      c.save();
+      c.setLineDash([]);
+      c.lineWidth = 1.5;
+      c.strokeStyle = "#155dcc";
+      c.fillStyle = "#fff";
+      resizeHandles(s).forEach((h) => {
+        c.fillRect(h.x - 4.5, h.y - 4.5, 9, 9);
+        c.strokeRect(h.x - 4.5, h.y - 4.5, 9, 9);
+      });
       c.restore();
     }
   }
