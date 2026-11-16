@@ -1,5 +1,27 @@
 # Kitenge Pattern Designer and Virtual Dress Preview
 
+## Browser studio — final workflow
+
+The browser application now adds freehand drawing, editable shapes, repeating
+fabric and animation, explainable palette scoring, a generated 3D mannequin,
+and a new dress overlay on an uploaded person photograph. Automatic pose
+alignment is followed by manual correction. Project JSON and all three PNG
+views can be exported. Photos are processed locally.
+
+With Node 22.12 or newer:
+
+```sh
+cd web
+npm ci
+npm run dev
+```
+
+Open the localhost URL printed by Vite. See the [browser setup, implementation
+walkthrough, testing and limitations](web/README.md). The browser uses Canvas,
+Three.js and MediaPipe; the original C++/OpenGL project below remains available
+for the hand-written algorithms and checkpoint evidence. The photo preview is
+an adjustable graphical overlay, and the 3D mannequin is generated geometry.
+
 ## Integrated desktop prototype
 
 A separate OpenGL desktop target now displays a Pure C++ fabric preview and a
@@ -24,13 +46,14 @@ shared contracts, integration order and checkpoint acceptance criteria.
 | Sayialel Eric Lenina (161492) | [Animation and frame generation](docs/team/README.md#lenina-animation-and-frame-generation) |
 | Andrew Karanja Gathirwa (167144) | [Interaction and curve integration](docs/team/README.md#andrew-interaction-and-curve-integration) |
 
-These are implementation assignments for the next checkpoints, not completed features.
+These guides record the team's CP2/CP3 assignments and implementation contracts.
+See the desktop prototype and browser workflow above for the current integrated work.
 
 A computer graphics semester project for designing geometric Kitenge-inspired
-fabric patterns and previewing them on a simplified dress. The planned final
-application through CP3 includes selectable predefined motifs, palettes,
-transformations, animation and a static 2D mannequin dress preview. Automatic
-palette scoring and camera alignment are outside the agreed CP3 scope.
+fabric patterns and previewing them on a simplified dress. The original CP3
+scope covered selectable motifs, palettes, transformations, animation and a
+static 2D mannequin. The final browser extension adds the workflow described
+above; uploaded-photo alignment replaces the previously considered live camera.
 
 ## Visual evidence
 
