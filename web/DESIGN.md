@@ -26,3 +26,8 @@ Selected motif shapes show eight square resize handles. Corners resize both
 axes, edges resize one, and Shift locks corner proportions. Cursor directions
 follow rotation. During drawing, defer inspector layout changes until pointer-up
 to keep the canvas steady on narrow screens.
+
+The 3D preview uses a smooth stylized dress with subtle geometric skirt folds.
+Map one seamless repeat at a consistent physical scale, with the construction
+seam behind the mannequin. Use soft material lighting on the garment and cast
+shadows on the plinth; self-shadow artifacts must not masquerade as cloth folds.

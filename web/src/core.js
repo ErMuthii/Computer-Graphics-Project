@@ -117,8 +117,8 @@ export function renderPattern(canvas, project, time = 0) {
     }
 }
 // A single exact grid period avoids a seam when repeated across a photograph.
-export function renderRepeat(canvas, project, time = 0) {
-  const pitch = Math.round(project.settings.pitch);
+export function renderRepeat(canvas, project, time = 0, resolution = null) {
+  const pitch = resolution ?? Math.round(project.settings.pitch);
   if (canvas.width !== pitch) canvas.width = canvas.height = pitch;
   renderPattern(
     canvas,

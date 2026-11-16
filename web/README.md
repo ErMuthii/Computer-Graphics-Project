@@ -84,9 +84,20 @@ Pose-guided forearm recompositing is optional. It is not pixel-perfect body
 segmentation, realistic cloth draping, body measurement or physical fitting.
 An uploaded image is a static photo, not a live-camera stream.
 
-`src/model.js`: Three.js procedural mannequin and lathed dress with UV-mapped
-CanvasTexture, lighting, orbit controls and PNG export. It is a generated model
-wearing the design, not an AI reconstruction of the photographed individual.
+`src/model.js`: Three.js procedural mannequin with a fixed-resolution 512px
+CanvasTexture containing one exact repeat tile, lighting, orbit controls and PNG
+export. Print repetition follows tile spacing. Only the plinth receives cast
+shadows; the dress uses smooth material lighting to avoid shadow-map acne.
+It is a generated model wearing the design, not an AI reconstruction of the
+photographed individual.
+
+`src/dress-geometry.js`: shape-preserving cubic interpolation of the dress
+profile, sampled at 97 height levels with 96 circumference segments. UVs use
+physical height and local arc length rather than profile-row index. The print
+is centered at the front; its construction seam is at the back, with matching
+vertex normals. Subtle skirt folds are geometric, not a cloth simulation. This
+replaces the coarse profile and whole-preview texture that produced visible
+bands, abrupt changes in print scale and dense self-shadow artifacts.
 
 `src/main.js`: state, bounded undo history, editor interactions, file handling
 and shared updates to fabric, photo and 3D views. No private user data is sent to
@@ -121,6 +132,9 @@ round trips and deletion, fitting controls, brush undo, neckline cutouts,
 alpha-mask restore and consistent print spacing at the bust and skirt.
 Resize tests cover corners, edges, rotation, opposite-anchor stability, size
 limits, freehand scaling, aspect locking, mobile coordinates and undo/redo.
+3D tests check finite closed geometry, seam normals, physical UV coordinates,
+texture repeat size, spacing updates and floor-only shadow reception. Front,
+close-up and side renders are inspected. See [updated 3D preview](docs/3d-preview.png).
 Generated screenshots and test reports are ignored working files.
 
 ## Technical demonstration

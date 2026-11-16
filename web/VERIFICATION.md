@@ -3,10 +3,10 @@
 Verified locally on macOS with Node 22.19.0 and installed Google Chrome.
 
 - `npm ci`: reproducible installation using the lockfile.
-- `npm test`: 10 passing tests covering the complete motif catalogue, themes and
+- `npm test`: 13 passing tests covering the complete motif catalogue, themes and
   swatches, 32-colour project validation, contrast mathematics, scoring bounds,
   project validation, pose-to-garment anchors and rotated picking.
-- `PLAYWRIGHT_CHROME=1 npm run test:browser`: 9 passing browser scenarios.
+- `PLAYWRIGHT_CHROME=1 npm run test:browser`: 10 passing browser scenarios.
   These cover editable geometry/freehand, undo/redo, animation, palette display,
   save/open JSON, fabric/3D/photo PNG downloads, actual pose inference using the
   bundled model, manual correction, no-person fallback, missing-model recovery
@@ -18,6 +18,10 @@ Verified locally on macOS with Node 22.19.0 and installed Google Chrome.
   limits and freehand point scaling.
   Inspector updates are deferred until the end of a drawing gesture, avoiding
   mobile canvas displacement when a layer is added.
+  3D coverage checks bounded smooth profile sampling, closed geometry, matching
+  back-seam normals, physical UV scaling, fixed repeat textures, spacing updates,
+  floor-only shadows and actual WebGL rendering. Front, close-up and side
+  screenshots inspected after the dress rendering corrections.
 - `npm run build`: production build passes.
 - `npm audit`: no reported vulnerabilities at verification time.
 - Existing `ctest --test-dir build-presentation --output-on-failure`: 19 passing

@@ -46,7 +46,8 @@ let photoTool = "fit",
   maskStrokes = [],
   maskDrag = null;
 const photoMask = document.createElement("canvas"),
-  repeatTile = document.createElement("canvas");
+  repeatTile = document.createElement("canvas"),
+  modelTile = document.createElement("canvas");
 const $ = (s) => document.querySelector(s),
   snapshot = () => JSON.stringify(project);
 const app = $("#app");
@@ -882,7 +883,8 @@ document.addEventListener("keydown", (e) => {
   }
 });
 try {
-  model = createModel($("#model"), pattern, (t) => status(t, true));
+  renderRepeat(modelTile, project, time, 512);
+  model = createModel($("#model"), modelTile, (t) => status(t, true));
   if (!model) {
     $("#export-model").disabled = true;
     $("#reset-view").disabled = true;
@@ -903,7 +905,9 @@ function tick(now) {
   if (dirty) {
     paintMotif(editor, project, true, tool === "select" ? selected : null);
     renderPattern(pattern, project, time);
-    model?.update();
+    renderRepeat(repeatTile, project, time);
+    renderRepeat(modelTile, project, time, 512);
+    model?.update(project.settings.pitch);
     if (photo) paintPhoto();
     dirty = false;
   }
