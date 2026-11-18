@@ -1,23 +1,13 @@
 import { LatheGeometry, Vector2, Vector3 } from "three";
+import { garmentProfile } from "./garment-styles.js";
 
 // Radius and height in mannequin world units, ordered from hem to neckline.
-const profile = [
-  [0.62, 0.57],
-  [0.545, 0.86],
-  [0.435, 1.17],
-  [0.31, 1.48],
-  [0.235, 1.72],
-  [0.28, 1.98],
-  [0.34, 2.2],
-  [0.36, 2.38],
-  [0.3, 2.46],
-  [0.13, 2.52],
-];
 export const PRINT_PERIOD = 0.22;
 
 // Shape-preserving cubic interpolation avoids bulges/overshoot at the waist
 // while replacing the original nine straight profile segments with a smooth curve.
-export function sampleDressProfile(rows = 96) {
+export function sampleDressProfile(rows = 96, style = "a-line") {
+  const profile = garmentProfile(style);
   const h = profile.slice(1).map((p, i) => p[1] - profile[i][1]);
   const slopes = h.map((d, i) => (profile[i + 1][0] - profile[i][0]) / d);
   const tangents = profile.map((_, i) => {
@@ -46,8 +36,12 @@ export function sampleDressProfile(rows = 96) {
   });
 }
 
-export function createDressGeometry({ segments = 96, rows = 96 } = {}) {
-  const points = sampleDressProfile(rows);
+export function createDressGeometry({
+  segments = 96,
+  rows = 96,
+  style = "a-line",
+} = {}) {
+  const points = sampleDressProfile(rows, style);
   // Put the construction seam at the back, away from the default front view.
   const geometry = new LatheGeometry(points, segments, Math.PI);
   const position = geometry.attributes.position,
@@ -57,7 +51,7 @@ export function createDressGeometry({ segments = 96, rows = 96 } = {}) {
       const n = i * (rows + 1) + j,
         theta = Math.PI + (i * 2 * Math.PI) / segments,
         y = position.getY(n);
-      const skirt = Math.max(0, Math.min(1, (1.72 - y) / (1.72 - 0.57)));
+      const skirt = Math.max(0, Math.min(1, (1.72 - y) / (1.72 - points[0].y)));
       const folds = 1 + 0.018 * skirt * skirt * Math.cos(theta * 12);
       position.setXYZ(
         n,

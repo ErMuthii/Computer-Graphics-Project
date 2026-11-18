@@ -31,3 +31,10 @@ The 3D preview uses a smooth stylized dress with subtle geometric skirt folds.
 Map one seamless repeat at a consistent physical scale, with the construction
 seam behind the mannequin. Use soft material lighting on the garment and cast
 shadows on the plinth; self-shadow artifacts must not masquerade as cloth folds.
+
+Library is a second workspace with ten real content previews. Show fabric and
+its matching dress together, with a short name, description, silhouette and Use
+design action. Keep the warm studio palette and stack the gallery on mobile.
+Prepared exports appear in a compact inline receipt with filename, size, retry
+and image-preview actions. Avoid claiming a file was saved when only a browser
+download request was issued.

@@ -1,10 +1,12 @@
 import { createMotif, paletteCatalog } from "./catalog.js";
 import { resizeHandles } from "./selection.js";
+import { garmentStyles } from "./garment-styles.js";
 export const palettes = paletteCatalog.map((p) => p.colors);
 export const motif = createMotif;
 export function defaults() {
   return {
     version: 1,
+    dressStyle: "a-line",
     palette: [...palettes[0]],
     settings: {
       angle: 0,
@@ -230,6 +232,9 @@ export function validateProject(v) {
   )
     throw Error("Choose a valid Kitenge project JSON file.");
   const s = v.settings;
+  if (v.dressStyle === undefined) v.dressStyle = "a-line";
+  if (!garmentStyles.some((s) => s.id === v.dressStyle))
+    throw Error("Project dress style is invalid.");
   if (
     !s ||
     !Number.isFinite(s.angle) ||

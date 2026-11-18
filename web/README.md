@@ -16,6 +16,15 @@ build with `npm run build -- --base=/your-path/`.
 
 ## Complete workflow
 
+Open **Library · 10 sets** to start with a finished fabric and matching dress.
+The sets are Rust diamonds, Indigo lattice, Sunburst gold, Coastal waves, Plum
+rosette, Forest leaves, Coral cowries, Midnight stars, Earth chevrons and Teal
+fans. **Use design** loads editable shapes, colours, spacing and a silhouette;
+Undo restores your previous design. The five silhouettes are A-line, Maxi,
+Midi, Shift and Fit & flare. The silhouette is saved in project JSON; older
+project files open with A-line. Photo alignment and correction masks are kept
+when switching designs, while the fabric updates.
+
 1. Choose one of 18 editable motifs or clear the motif. The library includes
    Diamond, Triangle, Cross, Steps, Sunburst and Bézier arch from the native
    catalogue, plus Flower, Leaf, Star, Spiral, Chevron, Rosette, Rings, Fan,
@@ -36,6 +45,8 @@ build with `npm run build -- --base=/your-path/`.
 3. Save/open project JSON to keep editable geometry and settings. Project files
    deliberately exclude photos. Nothing is automatically uploaded or persisted.
 4. Orbit the generated 3D mannequin wearing the same design; export its view.
+   Choose **Dress silhouette** to change its shape, or **Export dress PNG** for
+   a transparent, garment-only illustration at 800 × 1200 pixels.
 5. Choose Photo fitting and a front-facing full-body image. MediaPipe's local
    model estimates shoulders/hips, then positions a new dress. Drag six handles
    or use labelled percentage inputs for manual correction. Enlarge the fitting
@@ -51,10 +62,34 @@ PNG and WebP up to 20 MB; long edges are downsampled to 1600px. Local bundled
 WASM/model files avoid runtime calls to a remote model host. Serving the app still
 requires a local server or website; opening index.html via file:// is unsupported.
 
+## Export and save
+
+**Export fabric PNG**, **Export dress PNG**, **Export 3D view** and **Export fitted
+photograph** produce PNG files. Exports use `canvas.toBlob()` and live Blob URLs
+instead of data-URL downloads, which can be ignored by embedded browsers.
+The 3D scene is rendered immediately before capture. Photo export uses a separate
+canvas without alignment handles. Project save downloads editable JSON.
+
+Every prepared file also appears in a receipt at the top of the studio. Check
+your browser's Downloads; if no file appears, choose **Save file again**. For
+images, **Open preview** offers an additional save route. The receipt keeps its
+URL valid until it is closed or replaced. Encoding failures show an error rather
+than reporting that a file was saved. Downloads depend on browser settings;
+the app reports that a download was requested, not that the operating system
+successfully saved a file.
+
 ## Graphics and architecture
 
 `src/catalog.js`: 18 editable vector motif factories, 24 themes and 84 swatches.
 Curved presets sample cubic Bézier segments or parametric curves locally.
+
+`src/library.js`: ten editable project factories, paired thumbnail rendering and
+transparent garment illustration export. `src/garment-styles.js` holds the five
+profile definitions shared by illustrations and the 3D mesh. Library previews
+are generated from the actual editable geometry, not stock photographs.
+
+`src/exports.js`: PNG Blob encoding, persistent object-URL download links, an
+image preview receipt and resource cleanup.
 
 `src/core.js`: editable vector motif model, affine Canvas transforms, tiled cloth,
 hit testing, project validation and palette metrics. Harmony compares hue-pair

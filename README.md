@@ -13,6 +13,12 @@ custom hex colours. Designs support one background, one primary and up to 30
 accents. Photo fitting has curved armholes, three neckline options, consistent
 print scale, optional shading, an enlarged view and protect/restore brushes.
 
+Open **Library · 10 sets** for ten editable fabric-and-dress designs, with A-line,
+Maxi, Midi, Shift and Fit & flare silhouettes. Load a set, edit its shapes and
+colours, then export the fabric, transparent dress illustration, 3D view or fitted
+photo. PNG exports now use Blob files and retain save/preview links at the top
+of the studio for browsers that do not start a download automatically.
+
 With Node 22.12 or newer:
 
 ```sh
@@ -26,6 +32,16 @@ walkthrough, testing and limitations](web/README.md). The browser uses Canvas,
 Three.js and MediaPipe; the original C++/OpenGL project below remains available
 for the hand-written algorithms and checkpoint evidence. The photo preview is
 an adjustable graphical overlay, and the 3D mannequin is generated geometry.
+
+Team members can update from main and run the browser workflow with:
+
+```sh
+git switch main
+git pull --ff-only origin main
+cd web
+npm ci
+npm run dev
+```
 
 ## Integrated desktop prototype
 

@@ -11,6 +11,14 @@ import {
   validateProject,
 } from "./core.js";
 import { createModel } from "./model.js";
+import { createExporter, canvasPNG } from "./exports.js";
+import {
+  designLibrary,
+  libraryProject,
+  renderLibraryThumbnail,
+  renderDress,
+} from "./library.js";
+import { garmentStyles } from "./garment-styles.js";
 import {
   hitResizeHandle,
   resizeFromHandle,
@@ -52,7 +60,10 @@ const $ = (s) => document.querySelector(s),
   snapshot = () => JSON.stringify(project);
 const app = $("#app");
 app.innerHTML = `
-<header><a class="wordmark" href="./">Kitenge<span>Pattern Studio</span></a><p>One motif. A fabric of possibilities.</p><div class="file-actions"><button id="save">Save project</button><label class="button">Open project<input id="open" type="file" accept=".json,application/json" hidden></label><button class="primary" id="export">Export PNG</button></div></header>
+<header><a class="wordmark" href="./">Kitenge<span>Pattern Studio</span></a><p>One motif. A fabric of possibilities.</p><div class="file-actions"><button id="save">Save project</button><label class="button">Open project<input id="open" type="file" accept=".json,application/json" hidden></label><button class="primary" id="export">Export fabric PNG</button></div></header>
+<nav class="workspace-nav" aria-label="Workspaces"><button id="studio-nav" aria-pressed="true">Design studio</button><button id="library-nav" aria-pressed="false">Library · 10 sets</button></nav>
+<aside id="export-result" class="export-result" aria-label="Prepared export" hidden></aside>
+<section id="design-library" class="design-library" hidden aria-labelledby="library-title"><div class="library-heading"><h1 id="library-title">Fabric & dress library</h1><p>10 editable sets. Choose a finished design, then adjust its motif, colours and dress silhouette.</p></div><div class="design-library-grid">${designLibrary.map((e) => `<article class="library-design"><canvas width="480" height="300" data-library-preview="${e.id}" aria-label="${e.name}: fabric and matching dress"></canvas><div class="library-design-copy"><h2>${e.name}</h2><p>${e.description}</p><span>${garmentStyles.find((s) => s.id === e.style).label} dress · ${e.theme} colours</span><button data-library="${e.id}" aria-label="Use ${e.name}">Use design</button></div></article>`).join("")}</div></section>
 <main><aside class="inspector"><h1>Your design</h1><p class="subtle">Create a motif, then see it become cloth.</p><section><h2>Starting motif</h2><p class="fine">18 editable designs, including the six native motifs.</p><div class="motif-grid" id="presets">${motifCatalog.map(([id, label]) => `<button data-preset="${id}" title="Start with ${label}"><canvas width="72" height="72" aria-hidden="true"></canvas><span>${label}</span></button>`).join("")}</div></section>
 <section><h2>Drawing tools</h2><div class="tool-grid" role="group" aria-label="Drawing tools">${[
   ["select", "Select / move"],
@@ -74,7 +85,7 @@ app.innerHTML = `
 <section><h2>Layers</h2><div id="layers"></div><button id="clear" class="wide">Clear motif</button></section></aside>
 <div class="workbench"><div class="workspace-heading"><div><h2>Motif workspace</h2><p id="tool-hint">Select a shape and drag to move it.</p></div><span class="dimensions">400 × 400</span></div><div class="editor-wrap"><canvas id="editor" width="400" height="400" aria-label="Motif drawing canvas" tabindex="0"></canvas></div>
 <section class="pattern-section"><div class="workspace-heading"><h2>Live fabric</h2><div class="button-row"><select id="animation" aria-label="Animation mode"><option value="off">Still pattern</option><option value="rotate">Rotate motifs</option><option value="pulse">Pulse motifs</option></select><button id="play">Play</button></div></div><canvas id="pattern" width="720" height="480" aria-label="Generated repeating fabric"></canvas><div class="pattern-controls"><label>Rotation <output id="angle-out">0°</output><input id="angle" type="range" min="-180" max="180" value="0"></label><label>Scale <output id="scale-out">1×</output><input id="scale" type="range" min=".3" max="2" step=".05" value="1"></label><label>Tile spacing<input id="pitch" type="range" min="55" max="180" value="110"></label><label>Animation speed<input id="speed" type="range" min=".2" max="3" step=".1" value="1"></label><label class="check"><input id="reflect-x" type="checkbox"> Mirror X</label><label class="check"><input id="reflect-y" type="checkbox"> Mirror Y</label></div></section></div>
-<aside class="preview"><div class="preview-tabs" role="group" aria-label="Preview mode"><button id="model-tab" aria-pressed="true">3D mannequin</button><button id="photo-tab" aria-pressed="false">Photo fitting</button></div><div id="model-panel"><h2>Your pattern, in three dimensions</h2><p class="subtle">A generated mannequin wearing a textured dress. Drag to orbit, scroll to zoom.</p><div id="model" class="model"></div><div class="button-row"><button id="reset-view">Reset view</button><button id="export-model">Export 3D view</button></div><p class="fine">Procedurally generated geometry. A visual preview, not a garment measurement or cloth-physics simulation.</p></div>
+<aside class="preview"><div class="preview-tabs" role="group" aria-label="Preview mode"><button id="model-tab" aria-pressed="true">3D mannequin</button><button id="photo-tab" aria-pressed="false">Photo fitting</button></div><div id="model-panel"><h2>Your pattern, in three dimensions</h2><p class="subtle">A generated mannequin wearing a textured dress. Drag to orbit, scroll to zoom.</p><label class="dress-style-label">Dress silhouette<select id="dress-style">${garmentStyles.map((s) => `<option value="${s.id}">${s.label}</option>`).join("")}</select></label><div id="model" class="model"></div><div class="button-row"><button id="reset-view">Reset view</button><button id="export-model">Export 3D view</button><button id="export-dress">Export dress PNG</button></div><p class="fine">Procedurally generated geometry. A visual preview, not a garment measurement or cloth-physics simulation.</p></div>
 <div id="photo-panel" hidden><h2>Fit a dress to your photograph</h2><button id="enlarge-photo" class="wide">Enlarge fitting view</button><p class="subtle">Choose a front-facing, full-body photo. We detect shoulders and hips, then you refine the fit.</p><label class="upload">Choose a photograph<input id="photo-file" type="file" accept="image/jpeg,image/png,image/webp" hidden><span>JPG, PNG or WebP · up to 20 MB</span></label><div class="photo-stage"><div id="photo-empty">Your photograph stays on this device. The dress overlay appears here after you select an image.</div><canvas id="photo" width="640" height="800" aria-label="Photograph with dress alignment handles" tabindex="0" hidden></canvas></div><div class="button-row"><button id="detect" disabled>Detect person again</button><button id="manual" disabled>Reset manual fit</button></div><p class="fine">Drag the six blue handles to fit the shoulders, natural waist and hem. This adds a new dress; it does not erase existing clothing outside its outline.</p><fieldset id="alignment" disabled><label>Alignment handle<select id="anchor-select">${["Left shoulder", "Right shoulder", "Right waist", "Right hem", "Left hem", "Left waist"].map((n, i) => `<option value="${i}">${i + 1}. ${n}</option>`).join("")}</select></label><div class="pair"><label>X position (%)<input id="anchor-x" type="number" min="0" max="100" step=".5"></label><label>Y position (%)<input id="anchor-y" type="number" min="0" max="100" step=".5"></label></div><div class="pair"><label>Neckline<select id="neckline"><option value="round">Round</option><option value="v">V-neck</option><option value="boat">Boat</option></select></label><label>Neck depth<input id="neck-depth" type="range" min="8" max="40" value="20"></label></div><label>Print size<input id="print-size" type="range" min="35" max="200" value="100"></label><label class="check"><input id="cloth-shading" type="checkbox" checked> Soft garment shading</label><label>Overlay opacity<input id="opacity" type="range" min=".3" max="1" step=".05" value="1"></label><label class="check"><input id="arm-mask" type="checkbox"> Keep original forearms (includes sleeves)</label><h3>Correct hands & hair</h3><p class="fine">Protect photo reveals original pixels in front of the dress. Restore dress removes those brush marks. Use a small brush around hands, hair and accessories.</p><div class="button-row" role="group" aria-label="Photo correction tools"><button data-photo-tool="fit" aria-pressed="true">Fit handles</button><button data-photo-tool="protect" aria-pressed="false">Protect photo</button><button data-photo-tool="restore" aria-pressed="false">Restore dress</button></div><label>Correction brush size<input id="mask-size" type="range" min="5" max="70" value="20"></label><div class="button-row"><button id="mask-undo" disabled>Undo brush</button><button id="mask-clear" disabled>Clear corrections</button></div></fieldset><button id="export-photo" class="primary wide" disabled>Export fitted photograph</button></div></aside></main>
 <footer><span>Made with geometry. Inspired by kitenge.</span><span>Local editing · C++ companion preserved</span></footer><div id="status" role="status" aria-live="polite">Ready. Draw a motif or choose a starting design.</div>`;
 const editor = $("#editor"),
@@ -84,6 +95,45 @@ function status(t, error = false) {
   $("#status").textContent = t;
   $("#status").classList.toggle("error", error);
 }
+const exporter = createExporter($("#export-result"), status);
+let libraryDrawn = false;
+function workspace(view) {
+  const library = view === "library";
+  $("#design-library").hidden = !library;
+  $("main").hidden = library;
+  $("#studio-nav").setAttribute("aria-pressed", !library);
+  $("#library-nav").setAttribute("aria-pressed", library);
+  if (library && !libraryDrawn) {
+    document.querySelectorAll("[data-library-preview]").forEach((c) =>
+      renderLibraryThumbnail(
+        c,
+        designLibrary.find((e) => e.id === c.dataset.libraryPreview),
+      ),
+    );
+    libraryDrawn = true;
+  }
+  window.scrollTo({ top: 0 });
+}
+$("#studio-nav").onclick = () => workspace("studio");
+$("#library-nav").onclick = () => workspace("library");
+document.querySelectorAll("[data-library]").forEach(
+  (b) =>
+    (b.onclick = () => {
+      change(() => {
+        project = libraryProject(b.dataset.library);
+        selected = null;
+        role = 1;
+        time = 0;
+        playing = false;
+        $("#play").textContent = "Play";
+      });
+      workspace("studio");
+      model?.reset();
+      status(
+        `${designLibrary.find((e) => e.id === b.dataset.library).name} loaded. Edit any shape, colour or dress style. Undo restores your previous design.`,
+      );
+    }),
+);
 // File inputs stay private; make their visual labels usable from the keyboard.
 document.querySelectorAll('label:has(input[type="file"])').forEach((label) => {
   label.tabIndex = 0;
@@ -208,6 +258,7 @@ function sync() {
   $("#animation").value = project.settings.mode;
   $("#reflect-x").checked = project.settings.reflectX;
   $("#reflect-y").checked = project.settings.reflectY;
+  $("#dress-style").value = project.dressStyle ?? "a-line";
   const score = paletteScore(project.palette);
   $("#score").textContent = score.total;
   $("#scheme").textContent = `${score.scheme} hue relationship`;
@@ -559,21 +610,24 @@ $("#play").onclick = () => {
   $("#play").textContent = playing ? "Pause" : "Play";
   dirty = true;
 };
-function download(data, name) {
-  const a = document.createElement("a");
-  a.href = data;
-  a.download = name;
-  a.click();
-}
 $("#save").onclick = () => {
-  const blob = new Blob([JSON.stringify(project, null, 2)], {
-      type: "application/json",
-    }),
-    url = URL.createObjectURL(blob);
-  download(url, "kitenge-project.json");
-  setTimeout(() => URL.revokeObjectURL(url), 1000);
-  status("Project saved. Photos are not included in the project file.");
+  try {
+    exporter.json(project, "kitenge-project.json");
+  } catch (error) {
+    status(`Project save failed: ${error.message}`, true);
+  }
 };
+async function exportImage(button, produce, filename) {
+  button.disabled = true;
+  status(`Preparing ${filename}…`);
+  try {
+    exporter.deliver(await produce(), filename);
+  } catch (error) {
+    status(`Export failed: ${error.message}`, true);
+  } finally {
+    button.disabled = false;
+  }
+}
 $("#open").onchange = async (e) => {
   try {
     const f = e.target.files[0];
@@ -597,8 +651,7 @@ $("#open").onchange = async (e) => {
 };
 $("#export").onclick = () => {
   renderPattern(pattern, project, time);
-  download(pattern.toDataURL("image/png"), "kitenge-fabric.png");
-  status("Fabric PNG exported.");
+  exportImage($("#export"), () => canvasPNG(pattern), "kitenge-fabric.png");
 };
 function switchMode(next) {
   mode = next;
@@ -623,16 +676,30 @@ $("#enlarge-photo").onclick = () => {
 };
 $("#reset-view").onclick = () => model?.reset();
 $("#export-model").onclick = () => {
-  if (model) download(model.export(), "kitenge-3d-preview.png");
+  if (model)
+    exportImage(
+      $("#export-model"),
+      () => model.exportBlob(),
+      "kitenge-3d-preview.png",
+    );
+};
+$("#dress-style").onchange = () =>
+  change(() => (project.dressStyle = $("#dress-style").value));
+$("#export-dress").onclick = () => {
+  const canvas = document.createElement("canvas");
+  canvas.width = 800;
+  canvas.height = 1200;
+  renderDress(canvas, project, time);
+  exportImage($("#export-dress"), () => canvasPNG(canvas), "kitenge-dress.png");
 };
 function anchorFields() {
   const [x, y] = anchors[+$("#anchor-select").value];
   $("#anchor-x").value = (x * 100).toFixed(1);
   $("#anchor-y").value = (y * 100).toFixed(1);
 }
-function paintPhoto(handles = true) {
+function paintPhoto(handles = true, target = photoCanvas) {
   renderRepeat(repeatTile, project, time);
-  drawPhoto(photoCanvas, photo, repeatTile, anchors, {
+  drawPhoto(target, photo, repeatTile, anchors, {
     handles,
     opacity: +$("#opacity").value,
     landmarks,
@@ -859,10 +926,15 @@ photoCanvas.onpointerup = photoCanvas.onpointercancel = () => {
   maskDrag = null;
 };
 $("#export-photo").onclick = () => {
-  paintPhoto(false);
-  download(photoCanvas.toDataURL("image/png"), "kitenge-photo-fitting.png");
-  paintPhoto();
-  status("Photo exported without alignment handles.");
+  const canvas = document.createElement("canvas");
+  canvas.width = photoCanvas.width;
+  canvas.height = photoCanvas.height;
+  paintPhoto(false, canvas);
+  exportImage(
+    $("#export-photo"),
+    () => canvasPNG(canvas),
+    "kitenge-photo-fitting.png",
+  );
 };
 document.addEventListener("keydown", (e) => {
   if (["INPUT", "SELECT", "TEXTAREA"].includes(document.activeElement.tagName))
@@ -907,7 +979,7 @@ function tick(now) {
     renderPattern(pattern, project, time);
     renderRepeat(repeatTile, project, time);
     renderRepeat(modelTile, project, time, 512);
-    model?.update(project.settings.pitch);
+    model?.update(project.settings.pitch, project.dressStyle ?? "a-line");
     if (photo) paintPhoto();
     dirty = false;
   }

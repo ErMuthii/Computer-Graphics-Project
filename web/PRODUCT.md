@@ -16,6 +16,12 @@ up to 30 accents. Photo fitting uses a shaped outline with consistent print
 scale and optional shading. Users can enlarge the view, tune the neckline, and
 protect/restore original photo pixels for hands, hair and accessories.
 
+The library adds ten editable fabric-and-dress sets with paired previews and
+five dress silhouettes. Users can load and edit a set, undo loading, save its
+silhouette in project JSON, and export fabric, garment illustration, 3D view or
+fitted photograph. PNG exports use Blob downloads with visible retry/preview
+links so embedded browsers have a recovery path.
+
 Essential outputs are editable project JSON and PNG images of cloth, photo
 fitting and the 3D view. No account, remote photo processing or live camera is
 required. The six-member group needs readable implementation and reproducible

@@ -1,6 +1,7 @@
 import * as THREE from "three";
 import { OrbitControls } from "three/addons/controls/OrbitControls.js";
 import { createDressGeometry } from "./dress-geometry.js";
+import { canvasPNG } from "./exports.js";
 export function createModel(host, pattern, onError) {
   let renderer;
   try {
@@ -83,6 +84,7 @@ export function createModel(host, pattern, onError) {
   mesh(new THREE.SphereGeometry(0.19, 32, 24), skin, 0, 2.91, 0, 1, 1.3, 0.93);
   mesh(new THREE.CylinderGeometry(0.085, 0.11, 0.23, 24), skin, 0, 2.625, 0);
   const dress = mesh(createDressGeometry(), cloth, 0, 0, 0);
+  let dressStyle = "a-line";
   for (const side of [-1, 1]) {
     const arm = mesh(
       new THREE.CapsuleGeometry(0.065, 0.83, 6, 18),
@@ -136,7 +138,13 @@ export function createModel(host, pattern, onError) {
   }
   tick();
   return {
-    update(pitch = 110) {
+    update(pitch = 110, style = "a-line") {
+      if (style !== dressStyle) {
+        const next = createDressGeometry({ style });
+        dress.geometry.dispose();
+        dress.geometry = next;
+        dressStyle = style;
+      }
       texture.repeat.set(110 / pitch, 110 / pitch);
       texture.needsUpdate = true;
     },
@@ -146,7 +154,16 @@ export function createModel(host, pattern, onError) {
       controls.update();
     },
     export() {
+      renderer.render(scene, camera);
       return renderer.domElement.toDataURL("image/png");
+    },
+    exportBlob() {
+      if (renderer.getContext().isContextLost())
+        throw Error(
+          "The 3D view lost its graphics context. Reload the page and try again.",
+        );
+      renderer.render(scene, camera);
+      return canvasPNG(renderer.domElement);
     },
     dispose() {
       cancelAnimationFrame(frame);
